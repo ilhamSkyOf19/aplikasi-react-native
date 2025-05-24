@@ -1,29 +1,357 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import IdContextProvider, { useIdContext } from "@/context/IdContext";
+import { SelectedNavigationProvider, useSelectedNavigation } from "@/context/NavigationContext";
+import { SetoranRouteProp } from "@/interface/typeRouter";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { useFocusEffect, useRoute } from "@react-navigation/native";
+import { router, Stack, useNavigation, usePathname } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
+import { StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+// import { DatabaseProvider } from "@/context/DatabaseContext";
+import Splash from "@/components/splash";
+import ButtonBasic from "@/components/ui/ButtonBasic";
+import { useThemeFonts } from "@/constants/ThemeFont";
+import { AddContextProvider, useContextAdd } from "@/context/AddContext";
+import { CurrencyProvider } from "@/context/CurencyContext";
+import { ModalDeleteTabunganProvider, useModalDeleteTabungan } from "@/context/ModalDeleteTabunganContext";
+import { ModalDeleteTercapaiProvider, useModalDeleteTercapaiContext } from "@/context/ModalDeleteTercapaiContext";
+import { DataKeuangan } from "@/interface/type";
+import { getData } from "@/service/getData/get.service";
+import { height, width } from "@/utils/utils";
 
-import { useColorScheme } from '@/hooks/useColorScheme';
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
+// ==================
+// Props
+// ==================
 
-  if (!loaded) {
-    // Async font loading only occurs in development.
-    return null;
-  }
 
-  return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
-  );
+
+interface CustomSettingsHeaderProps {
+    name: string,
+    custom?: boolean;
 }
+
+interface PropCustomHeader {
+    url: 'add' | 'tercapai' | 'setoran' | '';
+}
+export default function Layout() {
+    //==========
+    // Routing: Ambil Pathname Saat Ini
+    //==========
+    const pathname = usePathname();
+
+    //==========
+    // State & Font: Cek Font dan Data Siap Ditampilkan
+    //==========
+    const fontsLoaded = useThemeFonts();
+    const [ready, setReady] = useState(false);
+    const [dataLoaded, setDataLoaded] = useState(false); // Kondisi untuk data lain
+
+    //==========
+    // Effect: Menunggu Fonts & Data Selesai Dimuat Sebelum Menampilkan Konten
+    //==========
+    useEffect(() => {
+        if (fontsLoaded && dataLoaded) {
+            const timer = setTimeout(() => {
+                setReady(true); // Menandakan siap untuk merender konten utama
+            }, 1000); // Delay 1 detik, bisa disesuaikan
+
+            return () => clearTimeout(timer); // Cleanup timeout
+        }
+    }, [fontsLoaded, dataLoaded]);
+
+    //==========
+    // Effect: Simulasi Pemuatan Data (Bisa Diganti dengan API Sungguhan)
+    //==========
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                await new Promise((resolve) => setTimeout(resolve, 500)); // Simulasi loading
+                setDataLoaded(true); // Tandai data selesai dimuat
+            } catch (error) {
+                console.warn('Error loading data:', error);
+            }
+        };
+
+        loadData();
+    }, []);
+
+    //==========
+    // Kondisi: Tampilkan Splash Screen Jika Belum Siap
+    //==========
+    if (!ready) {
+        return <Splash />;
+    }
+
+
+    return (
+        // <DatabaseProvider>
+        <SelectedNavigationProvider>
+            <IdContextProvider>
+                <AddContextProvider>
+                    <CurrencyProvider>
+                        <ModalDeleteTabunganProvider>
+                            <ModalDeleteTercapaiProvider>
+                                <StatusBar translucent backgroundColor="transparent" barStyle={pathname.includes('setoran') || pathname.includes('add') || pathname.includes('tercapai') ? 'dark-content' : 'light-content'} />
+                                <Stack screenOptions={{ headerShown: false }}>
+                                    {/* Tabs utama */}
+                                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                                    {/* Halaman Settings dengan custom header */}
+                                    <Stack.Screen
+                                        name="settings"
+                                        options={{
+                                            headerShown: true,
+                                            header: () => <CustomSettingsHeader name="pengaturan" />, // Gunakan custom header
+                                        }}
+                                    />
+                                    <Stack.Screen
+                                        name="about"
+                                        options={{
+                                            headerShown: true,
+                                            header: () => <CustomSettingsHeader name="tentang" />, // Gunakan custom header
+                                        }}
+                                    />
+                                    <Stack.Screen
+                                        name="setoran"
+                                        options={{
+                                            headerShown: true,
+                                            header: () => <CustomSetoranHeader url={'setoran'} /> // Gunakan custom header
+
+                                        }}
+                                    />
+                                    <Stack.Screen
+                                        name="add"
+                                        options={{
+                                            headerShown: true,
+                                            header: () => <CustomSetoranHeader url={'add'} /> // Gunakan custom header
+
+                                        }}
+                                    />
+                                    <Stack.Screen
+                                        name="tercapai"
+                                        options={{
+                                            headerShown: true,
+                                            header: () => <CustomSetoranHeader url={'tercapai'} /> // Gunakan custom header
+
+                                        }}
+                                    />
+
+                                </Stack>
+                            </ModalDeleteTercapaiProvider>
+                        </ModalDeleteTabunganProvider>
+                    </CurrencyProvider>
+                </AddContextProvider>
+            </IdContextProvider>
+        </SelectedNavigationProvider>
+        // </DatabaseProvider>
+
+    );
+}
+
+//  Komponen Header Kustom untuk Settings
+
+const CustomSettingsHeader: React.FC<CustomSettingsHeaderProps> = ({ name }) => {
+    const navigation = useNavigation();
+
+    return (
+        <View style={styles.containerSettingsHeader}>
+            {/* Tombol Back di Atas */}
+            <TouchableOpacity onPress={() => navigation.goBack()} style={{ flexDirection: "row", alignItems: "center" }}>
+                <Ionicons name="chevron-back-outline" size={24} color="#fff" />
+            </TouchableOpacity>
+
+            {/* Judul di Bawah Tombol */}
+            {name === "tentang" && <Text style={styles.title}>Tentang</Text>}
+            {name === "pengaturan" && <Text style={styles.title}>Pengaturan</Text>}
+        </View>
+    );
+};
+
+
+const CustomSetoranHeader: React.FC<PropCustomHeader> = ({ url }) => {
+    //==========
+    // Header State & Route Param
+    //==========
+    const [isHeader, setIsHeader] = useState<string>('');
+
+    //==========
+    // Navigation & Route Hooks
+    //==========
+    const navigation = useNavigation();
+    const route = useRoute<SetoranRouteProp>();
+    const { header, typeData } = route.params || {};
+
+    //==========
+    // Hook: Selected dari Navigasi
+    //==========
+    const { selected } = useSelectedNavigation();
+
+    //==========
+    // Effect: Set Header Berdasarkan URL atau Param
+    //==========
+    useEffect(() => {
+        if (url === 'add') {
+            setIsHeader(selected);
+        } else if (url === 'setoran') {
+            setIsHeader(header || '');
+        }
+    }, [url, selected]);
+
+
+    //==========
+    // Focus Effect: Ambil Data & Set Header Berdasarkan ID dan Jenis Data
+    //==========
+    useFocusEffect(
+        useCallback(() => {
+            const fetchData = async () => {
+                let getDatas: DataKeuangan[] | null | undefined = [];
+                if (typeData === 'harian') {
+                    getDatas = await getData('dataKeuanganHarian', 'belum');
+                } else if (typeData === 'mingguan') {
+                    getDatas = await getData('dataKeuanganMingguan', 'belum');
+                } else if (typeData === 'bulanan') {
+                    getDatas = await getData('dataKeuanganBulanan', 'belum');
+                }
+
+                if (getDatas !== null && getDatas !== undefined) {
+                    const found = getDatas.find((data) => data.id === id)?.nama || null;
+                    setIsHeader(found || '');
+                }
+            };
+
+            if (url === 'setoran') {
+                fetchData();
+            }
+        }, [url])
+    );
+
+
+    //==========
+    // State: Tambah Tabungan
+    //==========
+    const { setTriger } = useContextAdd();
+
+    const handleAddTabungan = useCallback((): void => {
+        setTriger(true);
+    }, [selected]);
+
+    //==========
+    // State: Hapus Tabungan
+    //==========
+    const { setVisibleModalDeleteTabungan } = useModalDeleteTabungan();
+
+    const handleDelete = useCallback((): void => {
+        setVisibleModalDeleteTabungan(true);
+    }, []);
+
+    //==========
+    // State: Hapus Tercapai
+    //==========
+    const { setIsModalDeleteTercapai } = useModalDeleteTercapaiContext();
+
+    const handleDeleteTercapai = useCallback((): void => {
+        setIsModalDeleteTercapai(true);
+    }, []);
+
+    //==========
+    // Handle Edit Navigasi
+    //==========
+    const { id } = useIdContext();
+
+    const handleEdit = useCallback((params: { [key: string]: string }): void => {
+        const query = new URLSearchParams(params).toString();
+        router.push(`/add?${query}`);
+    }, []);
+
+
+    return (
+        <View style={styles.headerContent}>
+            <View style={styles.containerBack}>
+                <TouchableOpacity onPress={() => navigation.goBack()} style={{ flexDirection: "row", alignItems: "center" }}>
+                    <Ionicons name="chevron-back-outline" size={28} color="#000" />
+                </TouchableOpacity>
+                <Text style={styles.textHeader}> {isHeader} </Text>
+            </View>
+            {/* icon delete and edit  */}
+            {url === 'setoran' && (
+                <View style={styles.containerIconHeader}>
+                    <TouchableOpacity onPress={() => handleEdit({ id, tipe: 'edit', typeData: selected })} style={styles.paddingIcon}>
+                        <MaterialIcons name="edit" size={20} color="gray" />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={handleDelete} style={styles.paddingIcon}>
+                        <MaterialIcons name="delete" size={20} color="gray" />
+                    </TouchableOpacity>
+                </View>
+            )}
+            {url === 'tercapai' && (
+                <ButtonBasic
+                    label='Hapus'
+                    handleButton={[handleDeleteTercapai]}
+                    custom={{ width: width / 4.8, backgroundColor: 'transparent' }}
+                    customText={{ color: '#000', fontSize: 14, fontFamily: 'Poppins-SemiBold' }}
+                />
+            )}
+
+            {url === 'add' && (
+                <ButtonBasic
+                    label='simpan'
+                    handleButton={[handleAddTabungan]}
+                    custom={{ width: width / 4.8 }} />
+            )}
+        </View>
+    )
+}
+
+
+const styles = StyleSheet.create({
+    containerSettingsHeader: {
+        position: "absolute",
+        top: 0, // Mulai dari atas layar
+        left: 0,
+        right: 0,
+        height: height / 5.5, // Atur tinggi header
+        backgroundColor: "#11A7FE",
+        justifyContent: "center",
+        paddingTop: height / 21, // Hindari tertutup status bar
+        paddingLeft: width / 18,
+        alignItems: "flex-start",
+        zIndex: 10, // Pastikan di atas elemen lain
+    },
+    // custom header setoran
+    headerContent: {
+        height: height / 8, // Atur tinggi header
+        backgroundColor: "white",
+        paddingTop: height / 20, // Hindari tertutup status bar
+        paddingLeft: width / 18,
+        paddingRight: width / 16,
+        flexDirection: 'row',
+        justifyContent: "space-between",
+        alignItems: "center",
+        zIndex: 10, // Pastikan di atas elemen lain
+    },
+    textHeader: {
+        fontFamily: 'Poppins-Regular',
+        fontSize: 16
+    },
+    containerIconHeader: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        gap: 2
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: "semibold",
+        color: "#fff",
+        textAlign: "left",
+        marginTop: 10,
+    },
+    containerBack: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'row',
+        gap: 8
+    },
+    paddingIcon: {
+        padding: '8%'
+    }
+})
