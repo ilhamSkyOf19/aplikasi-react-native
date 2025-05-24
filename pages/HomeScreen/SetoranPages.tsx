@@ -247,6 +247,7 @@ const SetoranPages: React.FC = () => {
             if (path) await updateTabungan(id, path, 'tercapai', 'tercapai');
         };
 
+        // Set Data Tercapai
         const setDataTercapai = async () => {
             if (tabungan !== datas?.target) return;
 
@@ -269,7 +270,7 @@ const SetoranPages: React.FC = () => {
             };
 
             await addDataTercapai('dataTercapai', data);
-            router.canGoBack();
+            router.back();
         };
 
         const fetchAll = async () => {

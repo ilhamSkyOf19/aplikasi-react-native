@@ -1,25 +1,26 @@
 import StyleInput from '@/components/input/StyleInput';
 import ComponentSnackbar from '@/components/Snackbar';
-import CurrencyModal from '@/components/ui/modal/CurrencyModal';
-import EstimasiModal from '@/components/ui/modal/EstimasiModal';
-import ImagePickerModal from '@/components/ui/modal/ImagePickerModal';
 import { useContextAdd } from '@/context/AddContext';
 import { useCurrencyContext } from '@/context/CurencyContext';
 import { currencyList } from '@/data/typeCurrency';
 import { formatNumber, formattedNonDecimal, height, width } from '@/utils/utils';
 import { MaterialIcons } from '@expo/vector-icons';
 import React, { RefObject, useCallback, useEffect, useState } from 'react';
-import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 // import { useDatabase } from '@/context/DatabaseContext';
+import CurrencyModal from '@/components/ui/modal/CurrencyModal';
+import EstimasiModal from '@/components/ui/modal/EstimasiModal';
+import ImagePickerModal from '@/components/ui/modal/ImagePickerModal';
 import TextWarning from '@/components/ui/TextWarning';
 import { useBorderUseRef } from '@/hooks/BorderUseRef';
-import { DataKeuangan } from '@/interface/type';
+import { DataKeuangan, SelectedType } from '@/interface/type';
 import deleteImg from '@/service/deleteService/deleteImg.service';
 import { getData } from '@/service/getData/get.service';
 import UpdateAllData from '@/service/updateService/updateAll.service';
 import { handleSaveLokal } from '@/utils/saveImageLocally';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { useRef } from 'react';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { addDataKeuangan } from '../../service/addService/addKeuangan.service';
 
 
@@ -57,7 +58,6 @@ const add: React.FC = () => {
     const [trigerInputNama, setTrigerInputNama] = useState<boolean>(false);
     const [trigerInputTarget, setTrigerInputTarget] = useState<boolean>(false);
     const [trigerInputEstimasi, setTrigerInputEstimasi] = useState<boolean>(false);
-
     const [warningMaxInputNama, setWarningMaxInputNama] = useState<boolean>(false);
     const [warningMaxInputTarget, setWarningMaxInputTarget] = useState<boolean>(false);
     const [warningMaxInputEstimasi, setWarningMaxInputEstimasi] = useState<boolean>(false);
@@ -69,8 +69,12 @@ const add: React.FC = () => {
     const { triger, setTriger } = useContextAdd();
     const navigation = useNavigation();
 
-    const params = useLocalSearchParams<{ typeData?: string, id?: string, tipe?: string }>();
-    const { typeData, id, tipe } = params;
+
+    // =================
+    // Get Params
+    // =================
+    const params = useLocalSearchParams<{ typeData?: SelectedType, id?: string, tipe?: string }>();
+    const { typeData, id, tipe } = params || {};
 
     //=================
     // useRef
@@ -379,131 +383,131 @@ const add: React.FC = () => {
 
 
     return (
-        <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-            style={{ flex: 1 }}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
-        >
-            <ScrollView contentContainerStyle={styles.container} ref={scrollRef}>
-                <TouchableWithoutFeedback onPress={() => setPopUp(false)}>
-                    <View style={styles.containerElement}>
-                        {/* input image */}
-                        <InputImage handleEvent={handleEventInputImage} imgUri={uriImg} />
-                        {/* input nama tabungan */}
-                        <View style={styles.containerInputName}>
-                            <Label label='Nama Tabungan' />
-                            <View
-                                style={styles.containerInputEstimasi}>
-                                <StyleInput
-                                    useRef={inputRefNama as RefObject<TextInput>}
-                                    amount={nama}
-                                    handleChangeText={handleInputName}
-                                    label='Nama'
-                                    typeKeboard='default'
-                                    custom={[{ marginBottom: 0, height: '65%', borderRadius: 7, }, borderColorNama]} fontSize={15}
-                                    max={20}
-                                    widthInput={width / 1} />
-                                {trigerInputNama && <TextWarning message='Nama Tabungan tidak boleh kosong' />}
-                                {warningMaxInputNama && <TextWarning message='Nama Tabungan tidak boleh lebih dari 20 karakter' />}
-                            </View>
-                        </View>
-                        {/* input target */}
-                        <View style={[styles.containerInputName, warningMaxInputTarget ? { marginBottom: '12%' } : { marginBottom: '7%' }]}>
-                            <Label label='Target Tabungan' />
-                            <View style={styles.containerInputEstimasi}>
-                                <StyleInput
-                                    useRef={inputRef as RefObject<TextInput>}
-                                    icon={true}
-                                    nameIcon={'money'}
-                                    sizeIcon={28}
-                                    colorIcon={'black'}
-                                    typeKeboard={'numeric'}
-                                    label={'Nominal'}
-                                    amount={target}
-                                    buttonPopUp={true}
-                                    custom={[{ marginBottom: 0, height: '65%', borderRadius: 7, gap: 10 }, borderColor]}
-                                    fontSize={15}
-                                    popUp={popUp}
-                                    setPopUp={setPopUp}
-                                    max={15}
-                                    handleChangeText={handleInputTarget} />
-                                {trigerInputTarget && <TextWarning message='Target Tabungan tidak boleh kosong' />}
-                                {warningMaxInputTarget && <TextWarning message='Target tidak boleh kurang dari tabungan yang sudah terkumpul' />}
-                            </View>
-                        </View>
-                        {/* mata uang */}
-                        <View style={styles.containerInputName}>
-                            <Label label='Mata Uang' />
-                            <View style={styles.containerInputEstimasi}>
-                                <StyleInput
-                                    flags={true}
-                                    typeKeboard={'numeric'}
-                                    label={'Mata Uang'}
-                                    amount={mataUang}
-                                    buttonPopUp={true}
-                                    custom={{ marginBottom: 0, height: '65%', borderRadius: 7, gap: 10 }}
-                                    fontSize={15}
-                                    popUp={modalMataUang}
-                                    setPopUp={setModalMataUang}
-                                    max={20}
-                                    typePopUp={'mataUang'}
-                                    handleFocus={handleClickMataUang}
-                                    widthInput={width / 1.4} />
 
-                            </View>
+        <KeyboardAwareScrollView
+            contentContainerStyle={styles.container}
+            extraScrollHeight={140}
+            enableOnAndroid={true}
+            keyboardShouldPersistTaps="handled"
+        >
+            <TouchableWithoutFeedback onPress={() => setPopUp(false)}>
+                <View style={styles.containerElement}>
+                    {/* input image */}
+                    <InputImage handleEvent={handleEventInputImage} imgUri={uriImg} />
+                    {/* input nama tabungan */}
+                    <View style={styles.containerInputName}>
+                        <Label label='Nama Tabungan' />
+                        <View
+                            style={styles.containerInputEstimasi}>
+                            <StyleInput
+                                useRef={inputRefNama as RefObject<TextInput>}
+                                amount={nama}
+                                handleChangeText={handleInputName}
+                                label='Nama'
+                                typeKeboard='default'
+                                custom={[{ marginBottom: 0, height: '65%', borderRadius: 7, }, borderColorNama]} fontSize={15}
+                                max={20}
+                                widthInput={width / 1} />
+                            {trigerInputNama && <TextWarning message='Nama Tabungan tidak boleh kosong' />}
+                            {warningMaxInputNama && <TextWarning message='Nama Tabungan tidak boleh lebih dari 20 karakter' />}
                         </View>
-                        {/* input estimasi pengisian */}
-                        <View style={[styles.containerInputName, { gap: 0 }]}>
-                            <Label label={`Estimasi Pengisian ${typeData === 'harian' ? 'Harian' : typeData === 'mingguan' ? 'Mingguan' : 'Bulanan'} `} />
-                            <View style={[styles.containerInputEstimasi, { justifyContent: 'space-between', paddingHorizontal: '5%', flexDirection: 'row', marginTop: '-2%' }]}>
-                                <StyleInput
-                                    useRef={inputRefEstimasi as RefObject<TextInput>}
-                                    icon={true}
-                                    nameIcon={'money'}
-                                    sizeIcon={28}
-                                    colorIcon={'black'}
-                                    typeKeboard={'numeric'}
-                                    label={'Nominal'}
-                                    amount={estimasi}
-                                    handleChangeText={handleInputEstimasi}
-                                    custom={[{ marginBottom: 0, width: '85%', height: '65%', borderRadius: 7, gap: 10 }, borderColorEstimasi]}
-                                    fontSize={15}
-                                    max={15}
-                                    // handleFocus={handleScrollEstimasi}
-                                    widthInput={width / 1.5} />
-                                {/* modal estimasi */}
-                                <TouchableOpacity onPress={handleModalEstimasi} style={styles.iconEstimasi}>
-                                    <MaterialIcons name='event-available' size={28} color='rgba(0, 0, 0, 0.5)' />
-                                </TouchableOpacity>
-                            </View>
-                            {trigerInputEstimasi && <TextWarning message='Estimasi tidak boleh kosong' />}
+                    </View>
+                    {/* input target */}
+                    <View style={[styles.containerInputName, warningMaxInputTarget ? { marginBottom: '12%' } : { marginBottom: '7%' }]}>
+                        <Label label='Target Tabungan' />
+                        <View style={styles.containerInputEstimasi}>
+                            <StyleInput
+                                useRef={inputRef as RefObject<TextInput>}
+                                icon={true}
+                                nameIcon={'money'}
+                                sizeIcon={28}
+                                colorIcon={'black'}
+                                typeKeboard={'numeric'}
+                                label={'Nominal'}
+                                amount={target}
+                                buttonPopUp={true}
+                                custom={[{ marginBottom: 0, height: '65%', borderRadius: 7, gap: 10 }, borderColor]}
+                                fontSize={15}
+                                popUp={popUp}
+                                setPopUp={setPopUp}
+                                max={15}
+                                handleChangeText={handleInputTarget} />
+                            {trigerInputTarget && <TextWarning message='Target Tabungan tidak boleh kosong' />}
+                            {warningMaxInputTarget && <TextWarning message='Target tidak boleh kurang dari tabungan yang sudah terkumpul' />}
                         </View>
-                        {/* snackbar */}
-                        <View style={styles.containerSnackbar}>
-                            <ComponentSnackbar
-                                playSnackbar={playSnackbar}
-                                handleClose={handleCloseSnackbar}
-                                infoSnackbar={
-                                    snackbarConditional === 'estimasi' ? 'Estimasi tidak melebihi Nilai Target' :
-                                        snackbarConditional === 'notTarget' ? 'Target tidak boleh kosong' : ''}
-                                custom={{
-                                    marginBottom: height / 2.5,
-                                }} />
+                    </View>
+                    {/* mata uang */}
+                    <View style={styles.containerInputName}>
+                        <Label label='Mata Uang' />
+                        <View style={styles.containerInputEstimasi}>
+                            <StyleInput
+                                flags={true}
+                                typeKeboard={'numeric'}
+                                label={'Mata Uang'}
+                                amount={mataUang}
+                                buttonPopUp={true}
+                                custom={{ marginBottom: 0, height: '65%', borderRadius: 7, gap: 10 }}
+                                fontSize={15}
+                                popUp={modalMataUang}
+                                setPopUp={setModalMataUang}
+                                max={20}
+                                typePopUp={'mataUang'}
+                                handleFocus={handleClickMataUang}
+                                widthInput={width / 1.4} />
 
                         </View>
                     </View>
-                </TouchableWithoutFeedback>
-                <View>
-                    <ImagePickerModal isVisible={visible} onCancel={() => setVisible(false)} handleUri={handleUri} />
+                    {/* input estimasi pengisian */}
+                    <View style={[styles.containerInputName, { gap: 0 }]}>
+                        <Label label={`Estimasi Pengisian ${typeData === 'harian' ? 'Harian' : typeData === 'mingguan' ? 'Mingguan' : 'Bulanan'} `} />
+                        <View style={[styles.containerInputEstimasi, { justifyContent: 'space-between', paddingHorizontal: '5%', flexDirection: 'row', marginTop: '-2%' }]}>
+                            <StyleInput
+                                useRef={inputRefEstimasi as RefObject<TextInput>}
+                                icon={true}
+                                nameIcon={'money'}
+                                sizeIcon={28}
+                                colorIcon={'black'}
+                                typeKeboard={'numeric'}
+                                label={'Nominal'}
+                                amount={estimasi}
+                                handleChangeText={handleInputEstimasi}
+                                custom={[{ marginBottom: 0, width: '85%', height: '65%', borderRadius: 7, gap: 10 }, borderColorEstimasi]}
+                                fontSize={15}
+                                max={15}
+                                // handleFocus={handleScrollEstimasi}
+                                widthInput={width / 1.5} />
+                            {/* modal estimasi */}
+                            <TouchableOpacity onPress={handleModalEstimasi} style={styles.iconEstimasi}>
+                                <MaterialIcons name='event-available' size={28} color='rgba(0, 0, 0, 0.5)' />
+                            </TouchableOpacity>
+                        </View>
+                        {trigerInputEstimasi && <TextWarning message='Estimasi tidak boleh kosong' />}
+                    </View>
+                    {/* snackbar */}
+                    <View style={styles.containerSnackbar}>
+                        <ComponentSnackbar
+                            playSnackbar={playSnackbar}
+                            handleClose={handleCloseSnackbar}
+                            infoSnackbar={
+                                snackbarConditional === 'estimasi' ? 'Estimasi tidak melebihi Nilai Target' :
+                                    snackbarConditional === 'notTarget' ? 'Target tidak boleh kosong' : ''}
+                            custom={{
+                                marginBottom: height / 2.5,
+                            }} />
+
+                    </View>
                 </View>
-                <View>
-                    <EstimasiModal onCancel={handleModalEstimasi} isVisible={modalEstimasi} target={target} estimasi={estimasi} />
-                </View>
-                <View>
-                    <CurrencyModal onCancel={handleModalMataUang} isVisible={modalMataUang} />
-                </View>
-            </ScrollView>
-        </KeyboardAvoidingView>
+            </TouchableWithoutFeedback>
+            <View>
+                <ImagePickerModal isVisible={visible} onCancel={() => setVisible(false)} handleUri={handleUri} />
+            </View>
+            <View>
+                <EstimasiModal onCancel={handleModalEstimasi} isVisible={modalEstimasi} target={target} estimasi={estimasi} />
+            </View>
+            <View>
+                <CurrencyModal onCancel={handleModalMataUang} isVisible={modalMataUang} />
+            </View>
+        </KeyboardAwareScrollView>
 
     )
 }
@@ -546,18 +550,16 @@ const InputImage: React.FC<InputImageProps> = ({ imgUri, handleEvent }) => {
 
 const styles = StyleSheet.create({
     container: {
-        flexGrow: 1,
+        flexGrow: 0,
         backgroundColor: '#fff',
     },
 
     containerElement: {
-        flex: 1,
         minWidth: width,
         minHeight: height,
         backgroundColor: '#fff',
         justifyContent: 'flex-start',
         alignItems: 'center',
-        paddingBottom: height / 10
     },
     // input image
     containerInputImage: {

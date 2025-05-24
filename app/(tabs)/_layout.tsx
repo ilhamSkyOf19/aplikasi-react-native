@@ -5,7 +5,11 @@ const TabsLayout: React.FC = () => {
 
     return (
 
-        <Tabs screenOptions={{ headerShown: false, tabBarActiveTintColor: "#11A7FE", tabBarInactiveTintColor: "gray" }}>
+        <Tabs screenOptions={{
+            headerShown: false,
+            tabBarActiveTintColor: "#11A7FE",
+            tabBarInactiveTintColor: "gray",
+        }}>
             <Tabs.Screen
                 name="home"
                 options={{

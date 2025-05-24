@@ -31,8 +31,10 @@ const CardListTercapai: React.FC<CardListTercapaiProps> = ({ dataTercapai }) => 
 
     const router = useRouter();
     const handleClick = useCallback((key: { id: string }) => {
-        const routeParams = new URLSearchParams(key).toString();
-        router.push(`/tercapai?${routeParams}`);
+        router.push({
+            pathname: '/tercapai',
+            params: key
+        });
     }, [])
 
 

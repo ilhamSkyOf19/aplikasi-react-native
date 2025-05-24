@@ -158,7 +158,6 @@ const CustomSettingsHeader: React.FC<CustomSettingsHeaderProps> = ({ name }) => 
             <TouchableOpacity onPress={() => navigation.goBack()} style={{ flexDirection: "row", alignItems: "center" }}>
                 <Ionicons name="chevron-back-outline" size={24} color="#fff" />
             </TouchableOpacity>
-
             {/* Judul di Bawah Tombol */}
             {name === "tentang" && <Text style={styles.title}>Tentang</Text>}
             {name === "pengaturan" && <Text style={styles.title}>Pengaturan</Text>}
@@ -258,8 +257,10 @@ const CustomSetoranHeader: React.FC<PropCustomHeader> = ({ url }) => {
     const { id } = useIdContext();
 
     const handleEdit = useCallback((params: { [key: string]: string }): void => {
-        const query = new URLSearchParams(params).toString();
-        router.push(`/add?${query}`);
+        router.push({
+            pathname: '/add',
+            params: params,
+        });
     }, []);
 
 

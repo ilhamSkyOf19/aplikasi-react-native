@@ -89,7 +89,7 @@ export const ContainerFront: React.FC<PropsFront> = ({ handleSettings, handleAbo
                     renderItem={
                         ({ item }) => {
                             return (
-                                <CardListTercapai dataTercapai={item} />
+                                <CardListTercapai key={item.id} dataTercapai={item} />
                             )
                         }
                     }

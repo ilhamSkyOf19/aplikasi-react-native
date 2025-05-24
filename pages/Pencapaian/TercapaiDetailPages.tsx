@@ -2,11 +2,10 @@ import DeleteModal from '@/components/ui/modal/DeleteModal';
 import { useModalDeleteTercapaiContext } from '@/context/ModalDeleteTercapaiContext';
 import { CurrencyInfo, currencyList } from '@/data/typeCurrency';
 import { DataSetoran, DataTercapai, SelectedType } from '@/interface/type';
-import { TercapaiRouteProp } from '@/interface/typeRouter';
 import { getDataTercapai } from '@/service/getData/getDataTercapai.service';
 import { formatCurrency, height, waktuTercapai, width } from '@/utils/utils';
-import { useRoute } from '@react-navigation/native';
 import { formatDate } from 'date-fns';
+import { useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -23,8 +22,8 @@ const TercapaiDetailPages: React.FC = () => {
     //=================
     // Route Params
     //=================
-    const route = useRoute<TercapaiRouteProp>();
-    const { id } = route.params || {};
+    const params = useLocalSearchParams<{ id: string }>();
+    const { id } = params || {};
 
     //=================
     // Function: Modal Delete Cancel
