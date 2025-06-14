@@ -91,7 +91,7 @@ export default function Layout() {
                     <CurrencyProvider>
                         <ModalDeleteTabunganProvider>
                             <ModalDeleteTercapaiProvider>
-                                <StatusBar translucent backgroundColor="transparent" barStyle={pathname.includes('setoran') || pathname.includes('add') || pathname.includes('tercapai') ? 'dark-content' : 'light-content'} />
+                                <StatusBar translucent backgroundColor="transparent" barStyle={pathname.includes('setoran') || pathname.includes('add') || pathname.includes('tercapai') || pathname.includes('login') ? 'dark-content' : 'light-content'} />
                                 <Stack screenOptions={{ headerShown: false }}>
                                     {/* Tabs utama */}
                                     <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -132,6 +132,18 @@ export default function Layout() {
                                             headerShown: true,
                                             header: () => <CustomSetoranHeader url={'tercapai'} /> // Gunakan custom header
 
+                                        }}
+                                    />
+                                    <Stack.Screen
+                                        name="login"
+                                        options={{
+                                            headerShown: false,
+                                        }}
+                                    />
+                                    <Stack.Screen
+                                        name="register"
+                                        options={{
+                                            headerShown: false,
                                         }}
                                     />
 

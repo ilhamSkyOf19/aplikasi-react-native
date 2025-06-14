@@ -1,3 +1,4 @@
+import ButtonLogin from '@/components/ButtonLogin';
 import ButtonBasic from '@/components/ui/ButtonBasic';
 import Button from '@/components/ui/ButtonTabungan';
 import IconSettings from '@/components/ui/IconSettings';
@@ -91,11 +92,19 @@ const ContainerFrontComponent: React.FC<PropsFront> = ({ handleSettings, handleA
     const router = useRouter();
 
 
-
+    // Handle Add
     const handleAdd = useCallback((params: { [key: string]: string }): void => {
         router.push({
             pathname: '/add',
             params: params,
+        });
+    }, [])
+
+
+    // Handle Url Login
+    const handleButtonLogin = useCallback(() => {
+        router.push({
+            pathname: '/login',
         });
     }, [])
 
@@ -108,7 +117,10 @@ const ContainerFrontComponent: React.FC<PropsFront> = ({ handleSettings, handleA
             <View style={styles.backgroundFrontTop}>
                 <View style={styles.containerIconSettings}>
                     <Image source={Logo} style={styles.icon}></Image>
-                    <IconSettings handleSettings={handleSettings} handleAbout={handleAbout} width={width} />
+                    <View style={{ flexDirection: 'row', gap: 7 }}>
+                        <IconSettings handleSettings={handleSettings} handleAbout={handleAbout} width={width} />
+                        <ButtonLogin handleButton={handleButtonLogin} />
+                    </View>
                 </View>
                 <View style={styles.containerButton}>
                     {button.map((item, index) => (
@@ -278,6 +290,7 @@ const styles = StyleSheet.create({
         height: height / 22,
         gap: 2,
     },
+
 
 
 

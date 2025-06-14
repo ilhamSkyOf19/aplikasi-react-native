@@ -6,7 +6,7 @@ import React, { memo, useState } from 'react'
 import { FlatList, Image, StyleSheet, View } from 'react-native'
 import Modal from 'react-native-modal'
 import { RadioButton, Text } from 'react-native-paper'
-import ButtonBasic from '../ButtonBasic'
+import ButtonBasic from '../ui/ButtonBasic'
 
 // ==================
 // Props 

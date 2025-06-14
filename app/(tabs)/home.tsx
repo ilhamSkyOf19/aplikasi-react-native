@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 // import * as Notifications from 'expo-notifications';
 
-import TabunganPages from '@/pages/HomeScreen/TabunganPages';
+import TabunganPages from '@/pages/homeScreen/TabunganPages';
 import { useRouter } from 'expo-router';
 
 const Tabungan: React.FC = () => {

@@ -1,4 +1,4 @@
-import SetoranPages from '@/pages/HomeScreen/SetoranPages'
+import SetoranPages from '@/pages/homeScreen/SetoranPages'
 import React from 'react'
 
 const setoran: React.FC = () => {

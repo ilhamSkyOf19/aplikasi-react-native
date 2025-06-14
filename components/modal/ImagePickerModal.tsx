@@ -4,7 +4,7 @@ import { MaterialIcons } from '@expo/vector-icons'
 import React, { memo, useEffect } from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import Modal from 'react-native-modal'
-import { height, width } from '../../../utils/utils'
+import { height, width } from '../../utils/utils'
 
 
 // ==================

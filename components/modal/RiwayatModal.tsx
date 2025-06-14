@@ -5,8 +5,8 @@ import { formatCurrency, formatDate } from '@/utils/utils';
 import { MaterialIcons } from '@expo/vector-icons';
 import React, { memo, useCallback, useEffect, useState } from 'react';
 import { Dimensions, Modal, StyleSheet, Text, View } from 'react-native';
-import { ModalProps } from '../../../interface/interfaceModal';
-import ButtonBasic from '../ButtonBasic';
+import { ModalProps } from '../../interface/interfaceModal';
+import ButtonBasic from '../ui/ButtonBasic';
 const { height, width }: { height: number; width: number } = Dimensions.get("screen");
 
 const RiwayatModal: React.FC<ModalProps> = ({ isVisible, onCancel, handleEdit, type, idSetoran, currency }) => {

@@ -1,4 +1,4 @@
-import TercapaiDetailPages from '@/pages/Pencapaian/TercapaiDetailPages'
+import TercapaiDetailPages from '@/pages/pencapaian/TercapaiDetailPages'
 import React from 'react'
 
 const Tercapai: React.FC = () => {

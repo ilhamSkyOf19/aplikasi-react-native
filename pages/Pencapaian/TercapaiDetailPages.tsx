@@ -1,4 +1,4 @@
-import DeleteModal from '@/components/ui/modal/DeleteModal';
+import DeleteModal from '@/components/modal/DeleteModal';
 import { useModalDeleteTercapaiContext } from '@/context/ModalDeleteTercapaiContext';
 import { CurrencyInfo, currencyList } from '@/data/typeCurrency';
 import { DataSetoran, DataTercapai, SelectedType } from '@/interface/type';

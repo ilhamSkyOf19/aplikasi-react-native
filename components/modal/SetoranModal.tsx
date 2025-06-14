@@ -11,9 +11,9 @@ import { updateSetoran } from '@/service/updateService/updateSetoran.service';
 import { formatNumber, formattedNonDecimal, height, width } from '@/utils/utils';
 import React, { memo, RefObject, useCallback, useEffect, useMemo, useState } from 'react';
 import { Modal, StyleSheet, Text, TextInput, TouchableWithoutFeedback, View } from 'react-native';
-import { ModalProps } from '../../../interface/interfaceModal';
-import ButtonBasic from '../ButtonBasic';
+import { ModalProps } from '../../interface/interfaceModal';
 import TextWarning from '../TextWarning';
+import ButtonBasic from '../ui/ButtonBasic';
 
 const SetoranModal: React.FC<ModalProps> = ({ isVisible, onCancel, title, idSetoran, type, kurangOrTambah, typeModal }) => {
     //=========

@@ -3,7 +3,7 @@ import { currencyList, flagImages } from '@/data/typeCurrency';
 import { MaterialIcons } from '@expo/vector-icons';
 import React, { RefObject, useEffect, useState } from 'react';
 import { Image, ImageSourcePropType, KeyboardTypeOptions, Pressable, StyleSheet, TextInput, View, ViewStyle } from 'react-native';
-import PopUpRekomendasi from '../ui/modal/ModalRekomendasi';
+import PopUpRekomendasi from '../modal/ModalRekomendasi';
 
 // ===================
 // Props

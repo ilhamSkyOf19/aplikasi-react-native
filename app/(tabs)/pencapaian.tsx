@@ -1,7 +1,7 @@
 import React from 'react';
 // import * as Notifications from 'expo-notifications';
 
-import PencapaianPages from '@/pages/Pencapaian/PencapaianPages';
+import PencapaianPages from '@/pages/pencapaian/PencapaianPages';
 import { useRouter } from 'expo-router';
 
 const Pencapaian: React.FC = () => {

@@ -1,7 +1,7 @@
+import DeleteModal from '@/components/modal/DeleteModal';
+import RiwayatModal from '@/components/modal/RiwayatModal';
+import SetoranModal from '@/components/modal/SetoranModal';
 import ButtonSmall from '@/components/ui/ButtonSmall';
-import DeleteModal from '@/components/ui/modal/DeleteModal';
-import RiwayatModal from '@/components/ui/modal/RiwayatModal';
-import SetoranModal from '@/components/ui/modal/SetoranModal';
 import { useIdContext } from '@/context/IdContext';
 import { useModalDeleteTabungan } from '@/context/ModalDeleteTabunganContext';
 import { CurrencyInfo, currencyList } from '@/data/typeCurrency';
