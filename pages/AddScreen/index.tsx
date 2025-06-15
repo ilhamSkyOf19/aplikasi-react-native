@@ -377,7 +377,7 @@ const add: React.FC = () => {
     // custom Hook
     // ===============
 
-    const { inputRef, borderColor } = useBorderUseRef(trigerInputTarget, setTrigerInputTarget, target, warningMaxInputTarget,);
+    const { inputRef, borderColor } = useBorderUseRef(trigerInputTarget, setTrigerInputTarget, target, warningMaxInputTarget);
     const { inputRef: inputRefNama, borderColor: borderColorNama } = useBorderUseRef(trigerInputNama, setTrigerInputNama, nama, warningMaxInputNama, setWarningMaxInputNama, 'nama');
     const { inputRef: inputRefEstimasi, borderColor: borderColorEstimasi } = useBorderUseRef(trigerInputEstimasi, setTrigerInputEstimasi, estimasi, warningMaxInputEstimasi, setWarningMaxInputEstimasi, 'estimasi');
 

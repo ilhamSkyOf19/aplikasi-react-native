@@ -1,18 +1,24 @@
 import useAnimation from '@/animation/loginAnimation';
 import InputLogin from '@/components/InputAuth/input';
+import { useAuthWarn } from '@/hooks/AuthWarn';
 import { default as UseAnimated } from '@/hooks/UseAnimated';
+import { loginUser } from '@/service/auth/login.service';
 import { height, width } from '@/utils/utils';
 import { AntDesign } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { router } from 'expo-router';
-import React, { useCallback, useRef, useState } from 'react';
+import LottieView from 'lottie-react-native';
+import React, { RefObject, useCallback, useRef, useState } from 'react';
 import {
+    Alert,
     Animated,
     ImageBackground,
     Pressable,
     ScrollView,
     StyleSheet,
     Text,
+    TextInput,
+    TouchableOpacity,
     View
 } from 'react-native';
 
@@ -22,6 +28,10 @@ const LoginScreen: React.FC = () => {
 
     const textHelloLeft = UseAnimated({ from: -300, to: 0, duration: 800 });
     const textSubHelloLeft = UseAnimated({ from: -300, to: 0, duration: 1400 });
+
+    // handle loading  
+    const [loading, setLoading] = useState(false);
+    const handleLoading = (value: boolean) => setLoading(value);
 
 
 
@@ -40,7 +50,21 @@ const LoginScreen: React.FC = () => {
             </View>
 
             {/* Animated Container Top */}
-            <FormInput />
+            <FormInput handleLoading={handleLoading} />
+
+            {
+                loading &&
+                <BlurView intensity={100} tint="dark" style={{ position: 'absolute', width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center', zIndex: 20 }}>
+                    <LottieView
+                        source={require('../../assets/spinner/loading-auth.json')}
+                        autoPlay
+                        loop
+                        style={{ width: width / 2.5, height: height / 4, }}
+                        speed={1}
+                    />
+                </BlurView>
+
+            }
 
 
         </ImageBackground>
@@ -48,9 +72,12 @@ const LoginScreen: React.FC = () => {
 };
 
 
+interface Props {
+    handleLoading: (value: boolean) => void
+}
 
 
-const FormInput: React.FC = () => {
+const FormInput: React.FC<Props> = ({ handleLoading }) => {
     const animation = useAnimation();
     const animation2 = useAnimation(0);
     const animation3 = useAnimation(50);
@@ -95,6 +122,50 @@ const FormInput: React.FC = () => {
         router.back();
     }
 
+    // auth login 
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [warnAuth, setWarnAuth] = useState({ kondisi: false, type: '', message: '' });
+
+    const handleUsername = (value: string) => setUsername(value);
+    const handlePassword = (value: string) => setPassword(value);
+
+
+
+
+    // handle login
+    const handleLogin = async () => {
+        if (!username || !password) {
+            setWarnAuth({ kondisi: true, type: 'empty', message: '' });
+            Alert.alert('Peringatan', 'Semua input harus diisi');
+            return;
+        }
+
+        try {
+            handleLoading(true);
+            const result = await loginUser(username, password);
+
+            if (result.success) {
+                Alert.alert('Berhasil', result.message);
+                router.push('/home');
+                // Bisa redirect ke login atau halaman lain di sini
+            } else {
+                if (result.success === false) {
+                    setWarnAuth({ kondisi: true, type: 'username', message: result.message });
+                }
+                Alert.alert('Gagal', result.message);
+            }
+        } catch (error) {
+            console.error('Register error:', error);
+            Alert.alert('Error', 'Terjadi kesalahan saat registrasi');
+        } finally {
+            handleLoading(false);
+        }
+    };
+
+
+    const { inputRef, borderStyle } = useAuthWarn(warnAuth, setWarnAuth, username);
+
 
     return (
         <Animated.ScrollView
@@ -106,8 +177,8 @@ const FormInput: React.FC = () => {
             <View style={{ height: height / 3 }}>
 
             </View>
-            <View style={[styles.containerForm, isFocused ? { height: height / 1.3 } : { height: height / 1.63 }]}>
-                <BlurView style={styles.containerBlur} intensity={160}>
+            <View style={[styles.containerForm, isFocused ? { height: height / 1.63 } : { height: height / 1.63 }]}>
+                <BlurView style={styles.containerBlur} intensity={200}>
                     <Animated.View style={[styles.containerTextBack, { transform: [{ translateY: animation2.anim }], opacity: animation2.animOpacity }]}>
                         <Pressable onPress={handleBack} style={{ flexDirection: 'row', alignItems: 'center', gap: 7, paddingVertical: 10 }}>
                             <AntDesign name="arrowleft" size={25} color="rgba(17,167,254,0.8)" />
@@ -118,12 +189,14 @@ const FormInput: React.FC = () => {
                         <Text style={styles.textLogin}>Login</Text>
                     </Animated.View>
                     <View style={styles.containerInput}>
-                        <InputLogin nameIcon={'user'} sizeIcon={20} placholder='Username' handleFocus={handleFocus} valueScroll={120} handleViewActive={handleViewActive} handleViewInactive={handleViewInactive} anim={animation4.anim} animOpacity={animation4.animOpacity} />
-                        <InputLogin nameIcon={'lock'} sizeIcon={20} placholder='Password' handleFocus={handleFocus} valueScroll={220} handleViewActive={handleViewActive} handleViewInactive={handleViewInactive} password={true} anim={animation5.anim} animOpacity={animation5.animOpacity} />
+                        <InputLogin useRef={inputRef as RefObject<TextInput>} nameIcon={'user'} sizeIcon={20} placholder='Username' handleFocus={handleFocus} valueScroll={120} handleViewActive={handleViewActive} handleViewInactive={handleViewInactive} anim={animation4.anim} animOpacity={animation4.animOpacity} handleChangeText={handleUsername} borderColor={borderStyle} />
+                        <InputLogin useRef={inputRef as RefObject<TextInput>} nameIcon={'lock'} sizeIcon={20} placholder='Password' handleFocus={handleFocus} valueScroll={220} handleViewActive={handleViewActive} handleViewInactive={handleViewInactive} password={true} anim={animation5.anim} animOpacity={animation5.animOpacity} handleChangeText={handlePassword} borderColor={borderStyle} />
                     </View>
-                    <Animated.Text style={[styles.buttonLogin, { transform: [{ translateY: animation6.anim }], opacity: animation6.animOpacity }]}>
-                        Login
-                    </Animated.Text>
+                    <TouchableOpacity onPress={() => handleLogin()} style={{ width: '100%', alignItems: 'center', marginTop: 20 }}>
+                        <Animated.Text style={[styles.buttonLogin, { transform: [{ translateY: animation6.anim }], opacity: animation6.animOpacity }]}>
+                            Login
+                        </Animated.Text>
+                    </TouchableOpacity>
                     <Animated.View style={[styles.containerRegister, { transform: [{ translateY: animation7.anim }], opacity: animation7.animOpacity }]}>
                         <Text style={styles.textRegister}>
                             Don't have an account?
@@ -227,7 +300,6 @@ const styles = StyleSheet.create({
         width: '100%',
         justifyContent: 'flex-start',
         alignItems: 'flex-start',
-        gap: 20,
         paddingTop: width / 14,
     },
     buttonLogin: {
@@ -240,7 +312,6 @@ const styles = StyleSheet.create({
         borderRadius: 25,
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: width / 8,
         textAlign: 'center',
     },
     containerRegister: {
@@ -256,7 +327,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Poppins-Regular',
     },
     textRegisterBlue: {
-        color: 'white',
+        color: 'rgba(17,167,254,1.00)',
         fontSize: 13,
         fontFamily: 'Poppins-Regular',
         padding: 8

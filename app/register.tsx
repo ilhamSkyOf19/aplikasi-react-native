@@ -1,4 +1,4 @@
-import RegisterScreen from '@/pages/Auth/RegisterScreen'
+import RegisterScreen from '@/pages/AuthScreen/RegisterScreen'
 import React from 'react'
 
 const Register = () => {

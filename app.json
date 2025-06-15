@@ -20,7 +20,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logo.png",
         "backgroundColor": "#11A7FE"
-      }
+      },
+      "package": "com.ilhamofsky19.tugasaplikasi"
     },
     "web": {
       "bundler": "metro",

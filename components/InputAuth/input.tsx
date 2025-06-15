@@ -1,6 +1,6 @@
 import { height, width } from '@/utils/utils'
 import { FontAwesome5 } from '@expo/vector-icons'
-import React, { useState } from 'react'
+import React, { RefObject, useState } from 'react'
 import { Animated, Pressable, StyleSheet, TextInput, View } from 'react-native'
 
 
@@ -14,13 +14,17 @@ interface Props {
     handleViewInactive(): void,
     valueScroll: number,
     anim: Animated.Value,
-    animOpacity: Animated.Value
+    animOpacity: Animated.Value,
+    handleChangeText: (value: string) => void,
+    borderColor?: string,
+    useRef?: RefObject<TextInput>,
+    setWarn?: (warn: { kondisi: boolean, type: string, message: string }) => void
 }
 
 
 
 
-const InputLogin: React.FC<Props> = ({ handleFocus, handleViewActive, handleViewInactive, nameIcon, sizeIcon, placholder, password, valueScroll, anim, animOpacity }) => {
+const InputLogin: React.FC<Props> = ({ handleFocus, handleViewActive, handleViewInactive, nameIcon, sizeIcon, placholder, password, valueScroll, anim, animOpacity, handleChangeText, borderColor, useRef, setWarn }) => {
 
 
     const [eye, setEye] = useState(false)
@@ -29,10 +33,11 @@ const InputLogin: React.FC<Props> = ({ handleFocus, handleViewActive, handleView
         setEye(!eye)
     }
     return (
-        <Animated.View style={[styles.input, { transform: [{ translateY: anim }], opacity: animOpacity }]}>
+        <Animated.View style={[styles.input, { transform: [{ translateY: anim }], opacity: animOpacity, borderColor: `${borderColor ?? 'rgba(255,255,255,0.5)'}`, borderWidth: 0.8 }]}>
             <View style={{ flexDirection: 'row', gap: 10, justifyContent: 'flex-start', alignItems: 'center', width: `${password ? '75%' : '85%'}` }}>
                 <FontAwesome5 name={nameIcon} size={sizeIcon} color='rgba(0, 0, 0, 0.5)' />
                 <TextInput
+                    ref={useRef}
                     keyboardType='default'
                     placeholder={placholder}
                     secureTextEntry={password && !eye}
@@ -46,6 +51,10 @@ const InputLogin: React.FC<Props> = ({ handleFocus, handleViewActive, handleView
                         handleFocus(0),
                             handleViewInactive()
                     }}
+                    onChangeText={(text) => {
+                        handleChangeText(text);
+                        setWarn?.({ kondisi: false, type: '', message: '' });
+                    }}
                 />
             </View>
             {
@@ -55,7 +64,7 @@ const InputLogin: React.FC<Props> = ({ handleFocus, handleViewActive, handleView
             }
 
 
-        </Animated.View>
+        </Animated.View >
     )
 }
 
@@ -72,7 +81,8 @@ const styles = StyleSheet.create({
         gap: 1,
         backgroundColor: 'rgba(255,255,255,0.5)',
         paddingHorizontal: width / 20,
-        borderRadius: 25
+        borderRadius: 25,
+        marginBottom: width / 20
     },
     inputText: {
         width: '100%',

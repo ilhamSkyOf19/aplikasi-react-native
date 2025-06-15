@@ -281,8 +281,8 @@ const CustomSetoranHeader: React.FC<PropCustomHeader> = ({ url }) => {
             <View style={styles.containerBack}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={{ flexDirection: "row", alignItems: "center" }}>
                     <Ionicons name="chevron-back-outline" size={28} color="#000" />
+                    <Text style={styles.textHeader}> {isHeader} </Text>
                 </TouchableOpacity>
-                <Text style={styles.textHeader}> {isHeader} </Text>
             </View>
             {/* icon delete and edit  */}
             {url === 'setoran' && (
