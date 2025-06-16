@@ -1,16 +1,18 @@
-import ButtonLogin from '@/components/ButtonLogin';
+import ModalUser from '@/components/modal/ModalUser';
 import ButtonBasic from '@/components/ui/ButtonBasic';
 import Button from '@/components/ui/ButtonTabungan';
 import IconSettings from '@/components/ui/IconSettings';
 import NotData from '@/components/ui/NotData';
 import { useSelectedNavigation } from '@/context/NavigationContext';
 import { DataKeuangan, SelectedType, TercapaiType } from '@/interface/type';
+import { getToken } from '@/service/auth/token.service';
 import { getData } from '@/service/getData/get.service';
 import { renderSetoran } from '@/utils/SetoranRender';
 import { height, width } from "@/utils/utils";
+import { FontAwesome } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import { useRouter } from 'expo-router';
-import React, { memo, useCallback, useRef, useState } from 'react';
+import { usePathname, useRouter } from 'expo-router';
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, Image, StyleSheet, View } from 'react-native';
 const Logo = require('../../assets/images/logo.png');
 // Button List
@@ -30,14 +32,23 @@ interface PropsFront {                  // Props Front
     data: DataKeuangan[];
     fetchData: (key: string, kondisi: TercapaiType) => void
     setData: (data: DataKeuangan[]) => void
+    isToken: boolean
+    userData: String | null
+    modalUser: boolean
+    handleUser: () => void
 }
 
 
 
 const TabunganPagesComponent: React.FC<PropsTabungan> = ({ handleSettings, handleAbout }) => {
+    // logout();
+
+    // pathname
+    const pathname = usePathname();
     // state 
     const [data, setData] = useState<DataKeuangan[]>([]); // state data keuangan
-
+    const [isToken, setIsToken] = useState<boolean>(false);
+    const [userData, setUserData] = useState<String | null>(null);
     // useCallback fetch data
     const fetchData = useCallback(async (key: string, kondisi: TercapaiType) => {
         const data = await getData(key, kondisi);
@@ -46,7 +57,42 @@ const TabunganPagesComponent: React.FC<PropsTabungan> = ({ handleSettings, handl
         }
     }, []);
 
-    // console.log('data', data);
+
+    useFocusEffect(
+        useCallback(() => {
+            const findToken = async () => {
+                const token = await getToken();
+                if (token !== null) {
+                    setUserData(token as String);
+                    setIsToken(true);
+                } else {
+                    setIsToken(false);
+                }
+            }
+            findToken();
+        }, [pathname])
+    )
+
+    // console.log(isToken)
+    // console.log(userData)
+
+    // modal user 
+    // user 
+    const [modalUser, setModalUser] = useState<boolean>(false);
+    // handle user 
+    const handleUser = useCallback(() => {
+        setModalUser((prev) => !prev);
+    }, [])
+
+    // pathname 
+
+    useEffect(() => {
+        if (pathname !== '/home') {
+            setModalUser(false);
+        }
+    }, [pathname]);
+
+
 
 
     return (
@@ -54,7 +100,7 @@ const TabunganPagesComponent: React.FC<PropsTabungan> = ({ handleSettings, handl
             <BackgroundLeft />
             <BackgroundRight />
             <View style={styles.container}>
-                <ContainerFront handleSettings={handleSettings} handleAbout={handleAbout} data={data} fetchData={fetchData} setData={setData} />
+                <ContainerFront handleSettings={handleSettings} handleAbout={handleAbout} data={data} fetchData={fetchData} setData={setData} isToken={isToken} userData={userData} modalUser={modalUser} handleUser={handleUser} />
             </View>
         </>
     )
@@ -62,8 +108,9 @@ const TabunganPagesComponent: React.FC<PropsTabungan> = ({ handleSettings, handl
 
 
 
-const ContainerFrontComponent: React.FC<PropsFront> = ({ handleSettings, handleAbout, data, fetchData, setData }) => {
+const ContainerFrontComponent: React.FC<PropsFront> = ({ handleSettings, handleAbout, data, fetchData, setData, isToken, userData, modalUser, handleUser }) => {
     const { selected, setSelected } = useSelectedNavigation();
+
 
 
     const handleClick = useCallback((item: SelectedType): void => {
@@ -108,6 +155,9 @@ const ContainerFrontComponent: React.FC<PropsFront> = ({ handleSettings, handleA
         });
     }, [])
 
+
+
+
     // scroll triger 
     const scrollY = useRef(new Animated.Value(0)).current;
 
@@ -119,7 +169,12 @@ const ContainerFrontComponent: React.FC<PropsFront> = ({ handleSettings, handleA
                     <Image source={Logo} style={styles.icon}></Image>
                     <View style={{ flexDirection: 'row', gap: 7 }}>
                         <IconSettings handleSettings={handleSettings} handleAbout={handleAbout} width={width} />
-                        <ButtonLogin handleButton={handleButtonLogin} />
+                        <FontAwesome name="user-circle" size={24} color="white" onPress={handleUser} />
+
+                        {modalUser && (
+                            <ModalUser userData={userData as string} token={isToken} />
+                        )}
+
                     </View>
                 </View>
                 <View style={styles.containerButton}>
@@ -290,6 +345,7 @@ const styles = StyleSheet.create({
         height: height / 22,
         gap: 2,
     },
+
 
 
 

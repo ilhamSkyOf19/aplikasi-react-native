@@ -41,6 +41,16 @@ export interface DataTercapai {
     dataSetoran: DataSetoran[];
 }
 
+// ====================
+// Interface: tokenData
+// ====================
+// types.ts (bisa kamu pisah ke file tersendiri jika mau)
+export interface TokenData {
+    token: string;
+    username: string;
+}
+
+
 //=====================
 // Type Aliases
 //=====================

@@ -1,8 +1,7 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as bycrypt from 'bcryptjs';
 import { doc, getDoc } from 'firebase/firestore';
-import { v4 as uuidv4 } from 'uuid';
 import { db } from '../../config/firebase.config';
+import saveToken from './saveToken.service';
 
 export const loginUser = async (username: string, password: string): Promise<any> => {
     try {
@@ -20,8 +19,8 @@ export const loginUser = async (username: string, password: string): Promise<any
             return { success: false, message: 'Username or Password is incorrect' };
         }
 
-
-        await AsyncStorage.setItem('token', uuidv4());
+        // save token
+        await saveToken(username);
 
 
         // success

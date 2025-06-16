@@ -146,6 +146,12 @@ export default function Layout() {
                                             headerShown: false,
                                         }}
                                     />
+                                    <Stack.Screen
+                                        name="editProfile"
+                                        options={{
+                                            headerShown: false,
+                                        }}
+                                    />
 
                                 </Stack>
                             </ModalDeleteTercapaiProvider>
