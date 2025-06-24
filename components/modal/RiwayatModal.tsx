@@ -1,4 +1,4 @@
-import { DataSetoran } from '@/interface/type';
+import { DataSetoran, TypeData } from '@/interface/type';
 import { deleteDataSetoran } from '@/service/deleteService/deleteDataSetoran.service';
 import { getDataSetoran } from '@/service/getData/getSetoran.service';
 import { formatCurrency, formatDate } from '@/utils/utils';
@@ -13,22 +13,29 @@ const RiwayatModal: React.FC<ModalProps> = ({ isVisible, onCancel, handleEdit, t
     // ==================
     // state data setoran
     // ==================
+    const [typeData, setTypeData] = useState<TypeData>('');
+    // ==================
+    // state data setoran
+    // ==================
     const [dataSetoran, setDataSetoran] = useState<DataSetoran | null>(null);
+    const [kurangOrTambah, setKurangOrTambah] = useState<string>('');
 
 
+    // ==================
+    // state type data 
+    // ==================
+    useEffect(() => {
+        if (type === 'harian') setTypeData('dataHarian');
+        else if (type === 'mingguan') setTypeData('dataMingguan');
+        else if (type === 'bulanan') setTypeData('dataBulanan');
+    })
     // ==================
     // get data 
     // ==================
     useEffect(() => {
         const fetchData = async () => {
             let sumberData: DataSetoran[] | null | undefined = null;
-            if (type === 'harian') {
-                sumberData = await getDataSetoran('dataSetoranHarian');
-            } else if (type === 'mingguan') {
-                sumberData = await getDataSetoran('dataSetoranMingguan');
-            } else if (type === 'bulanan') {
-                sumberData = await getDataSetoran('dataSetoranBulanan');
-            }
+            sumberData = await getDataSetoran('typeData', typeData);
 
             if (sumberData !== null && sumberData !== undefined) {
                 const foundData = sumberData?.find((item) => item.id === idSetoran) || null;
@@ -45,13 +52,7 @@ const RiwayatModal: React.FC<ModalProps> = ({ isVisible, onCancel, handleEdit, t
     // ===================
     const deleteData = useCallback(async () => {
         try {
-            if (type === 'harian') {
-                await deleteDataSetoran(idSetoran ?? '', 'dataSetoranHarian')
-            } else if (type === 'mingguan') {
-                await deleteDataSetoran(idSetoran ?? '', 'dataSetoranMingguan')
-            } else if (type === 'bulanan') {
-                await deleteDataSetoran(idSetoran ?? '', 'dataSetoranBulanan')
-            }
+            await deleteDataSetoran(idSetoran ?? 0);
             onCancel();
         } catch (error) {
             console.error(error);
@@ -59,6 +60,10 @@ const RiwayatModal: React.FC<ModalProps> = ({ isVisible, onCancel, handleEdit, t
     }, [idSetoran])
 
     console.log(type)
+
+    useEffect(() => {
+        setKurangOrTambah(dataSetoran?.plus ? 'tambah' : 'kurang');
+    }, [idSetoran, dataSetoran?.plus])
 
 
 
@@ -89,7 +94,7 @@ const RiwayatModal: React.FC<ModalProps> = ({ isVisible, onCancel, handleEdit, t
                                 <Text style={styles.textKeterangan}>{dataSetoran.ket}</Text>
                             </View>
                             <View style={styles.containerButton}>
-                                <ButtonBasic handleButton={[() => handleEdit?.(idSetoran || '', 'update')]} label={'Ubah'} custom={{ width: width / 3.9, height: height / 22 }} nameIcon='edit' />
+                                <ButtonBasic handleButton={[() => handleEdit?.(idSetoran ?? 0, 'update', kurangOrTambah)]} label={'Ubah'} custom={{ width: width / 3.9, height: height / 22 }} nameIcon='edit' />
                                 <ButtonBasic handleButton={[deleteData]} label={'Hapus'} custom={{ width: width / 3.9, height: height / 22 }} nameIcon='delete' />
                             </View>
                         </View>

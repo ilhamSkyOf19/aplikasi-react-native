@@ -2,8 +2,8 @@
 // Interface: Setoran
 //=====================
 export interface DataSetoran {
-    id: string;
-    idKeuangan: string;
+    id?: number;
+    idKeuangan: number;
     setoran: number;
     plus: boolean;
     date: string;
@@ -14,7 +14,7 @@ export interface DataSetoran {
 // Interface: Keuangan
 //=====================
 export interface DataKeuangan {
-    id: string;
+    id?: number;
     idCurrency: number;
     img: string;
     nama: string;
@@ -23,13 +23,14 @@ export interface DataKeuangan {
     tabungan: number;
     date: string;
     tercapai: TercapaiType;
+    dateTercapai?: string;
 }
 
 //=====================
 // Interface: Tercapai
 //=====================
 export interface DataTercapai {
-    id: string;
+    id?: number;
     idCurrency: number;
     img: string;
     nama: string;
@@ -56,5 +57,4 @@ export interface TokenData {
 //=====================
 export type TercapaiType = "tercapai" | "belum" | "";
 export type SelectedType = "harian" | "mingguan" | "bulanan" | "";
-export type DataPath = "dataKeuanganHarian" | "dataKeuanganMingguan" | "dataKeuanganBulanan" | "";
-export type DataPathSetoran = "dataSetoranHarian" | "dataSetoranMingguan" | "dataSetoranBulanan" | "";
+export type TypeData = "dataHarian" | "dataMingguan" | "dataBulanan" | "";

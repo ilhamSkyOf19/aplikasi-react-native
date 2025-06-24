@@ -13,7 +13,7 @@ export const kurangTabungan = async (
 
         // Update data berdasarkan ID dan field yang dipilih
         const updated = datas.map(item =>
-            item.id === id ? { ...item, tabungan: valueTabungan, ket: valueKet } : item
+            item.id === Number(id) ? { ...item, tabungan: valueTabungan, ket: valueKet } : item
         );
 
         // Simpan kembali ke AsyncStorage

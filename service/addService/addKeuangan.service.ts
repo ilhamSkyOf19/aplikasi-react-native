@@ -1,22 +1,47 @@
-import { DataKeuangan } from "@/interface/type";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import 'react-native-get-random-values';
-import { v4 as uuid4 } from 'uuid';
-export const addDataKeuangan = async (key: string, data: DataKeuangan) => {
+import { db } from "@/db";
+import { DataKeuangan, TypeData } from "@/interface/type";
+
+export const addDataKeuangan = async (typeData: TypeData, data: DataKeuangan): Promise<boolean> => {
+    console.log(typeData);
     try {
-        data.id = uuid4();
+        const database = await db;
 
-        // ambil data sebelumnya 
-        const storedData: string | null = await AsyncStorage.getItem(key);
-        let datas = storedData ? JSON.parse(storedData) : [];
+        database?.withTransactionAsync(async () => {
+            await database?.runAsync(
+                `
+                INSERT INTO data_keuangan (idCurrency, img, nama, target, targetSetoran, tabungan, date, tercapai, typeData)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+                `,
+                [
+                    data.idCurrency,
+                    data.img,
+                    data.nama,
+                    data.target,
+                    data.targetSetoran,
+                    data.tabungan,
+                    data.date,
+                    data.tercapai,
+                    typeData
+                ]
+            );
+        });
 
-        // tambahkan data baru 
-        datas.push(data);
+        // Cek apakah data berhasil dimasukkan (misal berdasarkan nama dan tanggal)
+        const result = await database.getFirstAsync(
+            `SELECT * FROM data_keuangan WHERE nama = ? AND date = ? ORDER BY id DESC LIMIT 1`,
+            [data.nama, data.date]
+        );
 
-        // simpan kembali data ke lokal storage
-        await AsyncStorage.setItem(key, JSON.stringify(datas));
-        console.log('data tersimpan', data);
+        if (result) {
+            console.log("✅ Data berhasil ditambahkan ke DB:", result);
+            return true;
+        } else {
+            console.warn("⚠️ Data tidak ditemukan setelah insert.");
+            return false;
+        }
+
     } catch (error) {
-        console.error('data not found', error);
+        console.error('❌ Gagal menambahkan data keuangan:', error);
+        return false;
     }
-}
+};

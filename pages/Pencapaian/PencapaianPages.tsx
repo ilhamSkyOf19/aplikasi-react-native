@@ -1,7 +1,7 @@
 import CardListTercapai from '@/components/cardComponent/CardListTercapai';
 import IconSettings from '@/components/ui/IconSettings';
 import NotData from '@/components/ui/NotData';
-import { DataTercapai } from '@/interface/type';
+import { DataKeuangan } from '@/interface/type';
 import { getDataTercapai } from '@/service/getData/getDataTercapai.service';
 import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useState } from 'react';
@@ -21,8 +21,7 @@ interface PropsTabungan {           // Props Tabungan
 interface PropsFront {              // Props Front
     handleSettings: () => void;
     handleAbout: () => void;
-    dataTercapai: DataTercapai[];
-    fetchData: (key: string) => void;
+    dataTercapai: DataKeuangan[];
 
 }
 
@@ -30,16 +29,21 @@ interface PropsFront {              // Props Front
 
 const TabunganPages: React.FC<PropsTabungan> = ({ handleSettings, handleAbout }) => {
     // state 
-    const [dataTercapai, setDataTercapai] = useState<DataTercapai[]>([]); // state data keuangan
+    const [dataTercapai, setDataTercapai] = useState<DataKeuangan[]>([]); // state data keuangan
 
     // useEffect 
-    // fetch data keuangan
-    const fetchDataKeuangan = useCallback(async (key: string) => {
-        const data = await getDataTercapai(key);
-        if (data) {
-            setDataTercapai(data);
-        }
-    }, [])
+    // useFocusEffect fetch data 
+    useFocusEffect(
+        useCallback(() => {
+            const data = async () => {
+                const data = await getDataTercapai('tercapai');
+                if (data) {
+                    setDataTercapai(data);
+                }
+            }
+            data();
+        }, [])
+    );
 
     // console.log(dataTercapai)
 
@@ -51,7 +55,7 @@ const TabunganPages: React.FC<PropsTabungan> = ({ handleSettings, handleAbout })
         <View style={style.container}>
             <BackgroundLeft />
             <BackgroundRight />
-            <ContainerFront handleSettings={handleSettings} handleAbout={handleAbout} fetchData={fetchDataKeuangan} dataTercapai={dataTercapai} />
+            <ContainerFront handleSettings={handleSettings} handleAbout={handleAbout} dataTercapai={dataTercapai} />
         </View>
     )
 }
@@ -59,14 +63,9 @@ const TabunganPages: React.FC<PropsTabungan> = ({ handleSettings, handleAbout })
 
 
 
-export const ContainerFront: React.FC<PropsFront> = ({ handleSettings, handleAbout, fetchData, dataTercapai }) => {
+export const ContainerFront: React.FC<PropsFront> = ({ handleSettings, handleAbout, dataTercapai }) => {
 
-    // useFocusEffect fetch data 
-    useFocusEffect(
-        useCallback(() => {
-            fetchData('dataTercapai');
-        }, [])
-    );
+
 
     // console.log('data', dataKeuangan)
     return (
@@ -85,7 +84,7 @@ export const ContainerFront: React.FC<PropsFront> = ({ handleSettings, handleAbo
             <View style={style.backgroundFrontBottom}>
                 <FlatList
                     data={dataTercapai}
-                    keyExtractor={(item) => item.id}
+                    keyExtractor={(item) => String(item.id)}
                     renderItem={
                         ({ item }) => {
                             return (

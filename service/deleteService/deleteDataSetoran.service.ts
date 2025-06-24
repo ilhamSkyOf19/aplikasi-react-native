@@ -1,20 +1,14 @@
-import { DataSetoran } from "@/interface/type";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
-export const deleteDataSetoran = async (id: string, key: string): Promise<void> => {
+import { db } from "../../db";
+export const deleteDataSetoran = async (id: number): Promise<boolean> => {
     try {
-        const storedData = await AsyncStorage.getItem(key);
-        let datas: DataSetoran[] = storedData ? JSON.parse(storedData) : [];
+        const result = (await db).runAsync(
+            `DELETE FROM data_setoran WHERE id = ?`,
+            [id]
+        );
 
-        if (datas && datas.length > 0) {
-            const filterDatas = datas.filter((item) => item.id !== id);
-            await AsyncStorage.setItem(key, JSON.stringify(filterDatas));
-            console.log('data berhasil dihapus');
-        } else {
-            console.log('data not found')
-            return;
-        }
+        return true
     } catch (error) {
-        console.error('gagal dihapus', error);
+        console.error('Gagal menghapus data setoran:', error);
+        return false;
     }
 };

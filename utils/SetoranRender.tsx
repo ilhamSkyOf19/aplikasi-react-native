@@ -6,7 +6,7 @@ import CardSetoran from '../components/cardComponent/CardSetoran';
 
 export const renderSetoran = (selected: SelectedType, scrollY: Animated.Value) => ({ item, index }: { item: DataKeuangan, index: number }) => (
     <CardSetoran
-        id={item.id}
+        id={String(item?.id)}
         img={item.img}
         target={item.target}
         targetSetoran={item.targetSetoran}

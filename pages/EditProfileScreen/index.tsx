@@ -1,10 +1,48 @@
+import { getToken } from '@/service/auth/token.service'
+import { updateUsername } from '@/service/auth/update.service'
 import { height, width } from '@/utils/utils'
 import { AntDesign, FontAwesome, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons'
 import { router } from 'expo-router'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 
 const EditProfile = () => {
+
+    // state username 
+    const [usernameOld, setUsernameOld] = useState<string>('');
+    const [usernameNew, setUsernameNew] = useState<string>('');
+
+    // get username old 
+    useEffect(() => {
+        const fetch = async () => {
+            const token = await getToken();
+            if (!token) {
+                router.push('/');
+            } else {
+                setUsernameOld(token as string);
+            }
+        }
+        fetch()
+    }, [])
+
+
+    // handle username new 
+    const handleUsernameNew = (value: string) => setUsernameNew(value.trim());
+
+    // handle update
+    const handleUpdate = () => {
+        const update = async () => {
+            const result = await updateUsername(usernameOld, usernameNew);
+            if (result.success) {
+                router.push('/');
+            } else {
+                alert(result.message);
+            }
+        }
+        console.log(usernameOld, usernameNew);
+        update();
+    }
+
     return (
         <View style={styles.container}>
             <View style={styles.containerBack}>
@@ -35,11 +73,13 @@ const EditProfile = () => {
                                 placeholderTextColor='rgba(0, 0, 0, 0.5)'
                                 style={styles.inputText}
                                 underlineColorAndroid={'transparent'}
+                                value={usernameNew}
+                                onChangeText={handleUsernameNew}
                             />
                         </View>
 
                     </View >
-                    <TouchableOpacity style={styles.button}>
+                    <TouchableOpacity style={styles.button} onPress={() => { handleUpdate() }}>
                         <Text style={styles.textButton}>Simpan</Text>
                     </TouchableOpacity>
                 </View>

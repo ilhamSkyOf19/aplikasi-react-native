@@ -1,27 +1,61 @@
-import { DataKeuangan } from '@/interface/type';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { db } from '@/db';
+import { DataKeuangan, TypeData } from '@/interface/type';
 
-const UpdateAllData = async (id: string, key: string, data: DataKeuangan): Promise<void> => {
+const updateAllDataKeuangan = async (
+    id: number | string,
+    typeData: TypeData,
+    data: DataKeuangan
+): Promise<boolean> => {
     try {
-        const storedData = await AsyncStorage.getItem(key);
-        let datas: DataKeuangan[] = storedData ? JSON.parse(storedData) : [];
+        const database = await db;
 
-        console.log('Data yang ada:', datas);
+        const {
+            idCurrency,
+            img,
+            nama,
+            target,
+            targetSetoran,
+            tabungan,
+            date,
+            tercapai,
+        } = data;
 
-        const updated = datas.map((item) => {
-            if (item.id === id) {
-                return { ...item, ...data };
-            }
-            return item;
-        });
+        await database?.withTransactionAsync(async () => {
+            await database?.runAsync(
+                `
+            UPDATE data_keuangan SET
+              idCurrency = ?,
+              img = ?,
+              nama = ?,
+              target = ?,
+              targetSetoran = ?,
+              tabungan = ?,
+              date = ?,
+              tercapai = ?,
+              typeData = ?
+            WHERE id = ?
+          `,
+                [
+                    idCurrency,
+                    img,
+                    nama,
+                    target,
+                    targetSetoran,
+                    tabungan,
+                    date,
+                    tercapai,
+                    typeData,
+                    id
+                ]
+            );
+        })
 
-        await AsyncStorage.setItem(key, JSON.stringify(updated));
-
-        console.log('Data berhasil diupdate');
+        console.log('Data berhasil diupdate di SQLite');
+        return true;
     } catch (error) {
-        console.error('Gagal mengupdate data:', error);
+        console.error('Gagal mengupdate data di SQLite:', error);
+        return false;
     }
 };
 
-
-export default UpdateAllData
+export default updateAllDataKeuangan;

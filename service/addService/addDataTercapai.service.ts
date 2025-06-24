@@ -1,18 +1,24 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { TypeData } from "@/interface/type";
+import { db } from "../../db";
 
-export const addDataTercapai = async (key: string, data: any) => {
+export const updateDataTercapai = async (id: number, typeData: TypeData): Promise<boolean> => {
     try {
-        // ambil data sebelumnya 
-        const storedData: string | null = await AsyncStorage.getItem(key);
-        let datas = storedData ? JSON.parse(storedData) : [];
+        const database = await db;
+        database?.withTransactionAsync(async () => {
+            await database?.runAsync(
+                `
+          UPDATE data_keuangan 
+          SET tercapai = 'tercapai' 
+          WHERE id = ? AND typeData = ?;
+          `,
+                [id, typeData]
+            );
+        })
 
-        // tambahkan data baru 
-        datas.push(data);
-
-        // simpan kembali data ke lokal storage
-        await AsyncStorage.setItem(key, JSON.stringify(datas));
-        console.log('data tersimpan', data);
+        console.log("✅ Status 'tercapai' berhasil di-update untuk ID:", id);
+        return true;
     } catch (error) {
-        console.error('data not found', error);
+        console.error("❌ Gagal update status 'tercapai':", error);
+        return false;
     }
-}
+};

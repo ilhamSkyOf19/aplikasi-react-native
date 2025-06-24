@@ -1,4 +1,3 @@
-import * as Sqlite from 'expo-sqlite';
-const db = Sqlite.openDatabaseAsync('keuangan.db');
+import * as SqLite from 'expo-sqlite';
+export const db = SqLite.openDatabaseAsync('keuangan');
 
-export default db;

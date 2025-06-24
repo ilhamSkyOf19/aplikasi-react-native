@@ -6,16 +6,16 @@ import { currencyList } from '@/data/typeCurrency';
 import { formatNumber, formattedNonDecimal, height, width } from '@/utils/utils';
 import { MaterialIcons } from '@expo/vector-icons';
 import React, { RefObject, useCallback, useEffect, useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 // import { useDatabase } from '@/context/DatabaseContext';
 import CurrencyModal from '@/components/modal/CurrencyModal';
 import EstimasiModal from '@/components/modal/EstimasiModal';
 import ImagePickerModal from '@/components/modal/ImagePickerModal';
 import TextWarning from '@/components/TextWarning';
 import { useBorderUseRef } from '@/hooks/BorderUseRef';
-import { DataKeuangan, SelectedType } from '@/interface/type';
+import { DataKeuangan, SelectedType, TypeData } from '@/interface/type';
 import deleteImg from '@/service/deleteService/deleteImg.service';
-import { getData } from '@/service/getData/get.service';
+import { getDataKeuangan } from '@/service/getData/getDataKeuangan.service';
 import UpdateAllData from '@/service/updateService/updateAll.service';
 import { handleSaveLokal } from '@/utils/saveImageLocally';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
@@ -61,6 +61,7 @@ const add: React.FC = () => {
     const [warningMaxInputNama, setWarningMaxInputNama] = useState<boolean>(false);
     const [warningMaxInputTarget, setWarningMaxInputTarget] = useState<boolean>(false);
     const [warningMaxInputEstimasi, setWarningMaxInputEstimasi] = useState<boolean>(false);
+    const [typeDb, setTypeDb] = useState<TypeData>('dataHarian');
 
     //=================
     // Context & Navigation
@@ -84,6 +85,14 @@ const add: React.FC = () => {
     //=================
     // useEffect
     //=================
+    useEffect(() => {
+        if (typeData === 'harian') setTypeDb('dataHarian');
+        else if (typeData === 'mingguan') setTypeDb('dataMingguan');
+        else if (typeData === 'bulanan') setTypeDb('dataBulanan');
+    }, [typeData])
+
+
+
     useEffect(() => { setTriger(false); }, []);
 
     useEffect(() => {
@@ -98,7 +107,7 @@ const add: React.FC = () => {
         if (triger === true) {
             const timer = setTimeout(() => {
                 setTriger(false);
-                console.log('render')
+                // console.log('render')
             }, 0)
 
             return () => clearTimeout(timer);
@@ -140,29 +149,29 @@ const add: React.FC = () => {
                 await handleUpdate();
                 setTriger(false);
                 setDatas(null);
-                navigation.goBack();
             } else {
                 await handleSimpan();
-                setTriger(false);
-                navigation.goBack();
             }
         };
         if (savedUri !== 'kosong') {
-            console.log('save')
+            // console.log('save')
             saveData();
         }
-    }, [savedUri]);
+    }, [savedUri, alredy, datas, id]);
+
+    // useEffect(() => {
+    //     console.log("cek kondisi", { tipe, alredy, savedUri, datas, id });
+    // }, [tipe, alredy, savedUri, datas, id]);
+
 
 
     useEffect(() => {
         if (id) {
             const fetchData = async () => {
                 let getDatas: DataKeuangan[] | null | undefined = [];
-                if (typeData === 'harian') getDatas = await getData('dataKeuanganHarian', 'belum');
-                else if (typeData === 'mingguan') getDatas = await getData('dataKeuanganMingguan', 'belum');
-                else if (typeData === 'bulanan') getDatas = await getData('dataKeuanganBulanan', 'belum');
+                getDatas = await getDataKeuangan(typeDb, 'belum');
                 if (getDatas) {
-                    const found = getDatas.find((data) => data.id === id) || null;
+                    const found = getDatas.find((data) => data.id === Number(id)) || null;
                     setDatas(found);
                 }
             };
@@ -301,7 +310,6 @@ const add: React.FC = () => {
         if (!nama || !target || !estimasi) return;
 
         const data: DataKeuangan = {
-            id: '',
             idCurrency: Number(currency),
             img: savedUri || '',
             nama,
@@ -312,9 +320,25 @@ const add: React.FC = () => {
             tercapai: 'belum',
         };
 
-        if (typeData === 'harian') await addDataKeuangan('dataKeuanganHarian', data);
-        else if (typeData === 'mingguan') await addDataKeuangan('dataKeuanganMingguan', data);
-        else if (typeData === 'bulanan') await addDataKeuangan('dataKeuanganBulanan', data);
+        let result = false;
+
+        if (typeData === 'harian') {
+            result = await addDataKeuangan('dataHarian', data);
+        } else if (typeData === 'mingguan') {
+            result = await addDataKeuangan('dataMingguan', data);
+        } else if (typeData === 'bulanan') {
+            result = await addDataKeuangan('dataBulanan', data);
+        }
+
+        if (result) {
+            // berhasil → kembali atau reset form
+            setTriger(false);
+            navigation.goBack();
+        } else {
+            // gagal → kasih alert
+            Alert.alert("Gagal", "Data gagal disimpan.");
+        }
+
 
         setNama('');
         setTarget('');
@@ -325,8 +349,8 @@ const add: React.FC = () => {
 
 
     const handleUpdate = useCallback(async () => {
-        if (!nama || !target || !estimasi || !uriImg) {
-
+        if (!nama || !target || !estimasi) {
+            return;
         };
 
         if (datas && id) {
@@ -335,11 +359,10 @@ const add: React.FC = () => {
             };
 
             if (datas.img !== savedUri) {
-                deleteImage();
+                await deleteImage();
             }
 
             const data: DataKeuangan = {
-                id: datas?.id,
                 idCurrency: Number(currency),
                 img: savedUri || '',
                 nama,
@@ -350,18 +373,15 @@ const add: React.FC = () => {
                 tercapai: 'belum',
             };
 
-            switch (typeData) {
-                case 'harian':
-                    await UpdateAllData(datas.id, 'dataKeuanganHarian', data);
-                    break;
-                case 'mingguan':
-                    await UpdateAllData(datas.id, 'dataKeuanganMingguan', data);
-                    break;
-                case 'bulanan':
-                    await UpdateAllData(datas.id, 'dataKeuanganBulanan', data);
-                    break;
-            }
+            // fecth update
+            const result = await UpdateAllData(id, typeDb, data);
 
+            if (result) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                navigation.goBack();
+            } else {
+                Alert.alert("Gagal", "Data gagal diupdate.");
+            }
             setNama('');
             setTarget('');
             setEstimasi('');

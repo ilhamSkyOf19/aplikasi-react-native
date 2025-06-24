@@ -1,6 +1,4 @@
 import { useSelectedNavigation } from "@/context/NavigationContext";
-import { SelectedType } from "@/interface/type";
-import { deleteData } from "@/service/deleteService/deleteData.service";
 import { deleteDataTercapai } from "@/service/deleteService/deleteDataTercapai.service";
 import { height, width } from "@/utils/utils";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -18,10 +16,9 @@ interface DeleteModalProps {
     onCancel: () => void
     id: string;
     typeModal: 'deleteTabungan' | 'deleteTercapai',
-    typeData?: SelectedType
 }
 
-const DeleteModal: React.FC<DeleteModalProps> = ({ onCancel, isVisible, id, typeModal, typeData }) => {
+const DeleteModal: React.FC<DeleteModalProps> = ({ onCancel, isVisible, id, typeModal }) => {
     // ==================
     // Selected use context
     // ==================
@@ -33,31 +30,10 @@ const DeleteModal: React.FC<DeleteModalProps> = ({ onCancel, isVisible, id, type
     // handle hapus
     // ==================
     const handleHapus = useCallback(async () => {
-        if (typeModal === 'deleteTabungan') {
-            if (selected === 'harian') {
-                await deleteData(id, 'dataKeuanganHarian', 'dataSetoranHarian');
-            } else if (selected === 'mingguan') {
-                await deleteData(id, 'dataKeuanganMingguan', 'dataSetoranMingguan');
-            } else if (selected === 'bulanan') {
-                await deleteData(id, 'dataKeuanganBulanan', 'dataSetoranBulanan');
-            } else {
-                return null;
-            }
-            onCancel();
-            route.goBack();
-        } else {
-            if (typeData === 'harian') {
-                await deleteData(id, 'dataKeuanganHarian', 'dataSetoranHarian');
-            } else if (typeData === 'mingguan') {
-                await deleteData(id, 'dataKeuanganMingguan', 'dataSetoranMingguan');
-            } else if (typeData === 'bulanan') {
-                await deleteData(id, 'dataKeuanganBulanan', 'dataSetoranBulanan');
-            }
-            await deleteDataTercapai(id, 'dataTercapai');
-            onCancel();
-            route.goBack();
-        }
-    }, [typeData, id])
+        await deleteDataTercapai(id)
+        onCancel();
+        route.goBack();
+    }, [id])
 
 
 

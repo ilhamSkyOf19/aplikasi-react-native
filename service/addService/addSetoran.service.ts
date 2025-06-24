@@ -1,22 +1,34 @@
-import { DataSetoran } from "@/interface/type";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import 'react-native-get-random-values';
-import { v4 as uuid4 } from 'uuid';
-export const addDataSetoran = async (data: DataSetoran, key: string) => {
+import { DataSetoran, TypeData } from "@/interface/type";
+import { db } from "../../db";
+
+
+export const addDataSetoran = async (data: DataSetoran, typeData: TypeData): Promise<boolean> => {
     try {
-        data.id = uuid4();
+        const database = await db;
+        database?.withTransactionAsync(async () => {
+            await database?.runAsync(
+                `
+                INSERT INTO data_setoran 
+                (idKeuangan, setoran, plus, date, ket, typeData) 
+                VALUES (?, ?, ?, ?, ?, ?);
+                `,
+                [
+                    data.idKeuangan,
+                    data.setoran,
+                    data.plus ? 1 : 0, // SQLite tidak punya tipe BOOLEAN → pakai 1/0
+                    data.date,
+                    data.ket,
+                    typeData
+                ]
+            );
+        })
 
-        // ambil data sebelumnya 
-        const storedData: string | null = await AsyncStorage.getItem(key);
-        let datas = storedData ? JSON.parse(storedData) : [];
-
-        // tambahkan data baru 
-        datas.push(data);
-
-        // simpan kembali data ke lokal storage
-        await AsyncStorage.setItem(key, JSON.stringify(datas));
-        console.log('data tersimpan', data);
+        console.log('data keuangan berhasil ditambahkan');
+        console.log(data);
+        return true;
     } catch (error) {
-        console.error('data not found', error);
+        console.error('gagal menambahkan data keuangan', error);
+        return false;
     }
+
 }

@@ -44,7 +44,7 @@ const CardSetoran: React.FC<TabunganLayoutsProps> = ({ target, targetSetoran, ta
     // Next Router: Navigasi dengan Query
     //==========
     const router = useRouter();
-    const handleButton = (params: { [key: string]: string }) => {
+    const handleButton = (params: { id: string, typeData: string }) => {
         router.push({
             pathname: '/setoran',
             params: params,
@@ -163,7 +163,7 @@ const CardSetoran: React.FC<TabunganLayoutsProps> = ({ target, targetSetoran, ta
                 </Animated.View>
             </Animated.View>
             <Animated.View style={[styles.buttonSetor, { opacity }]}>
-                <ButtonBasic handleButton={[() => handleButton({ header: id, typeData: type }), () => setId(id)]} label='Setor' />
+                <ButtonBasic handleButton={[() => handleButton({ id: id, typeData: type }), () => setId(Number(id))]} label='Setor' />
             </Animated.View>
         </Animated.View>
     )
