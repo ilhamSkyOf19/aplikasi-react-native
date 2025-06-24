@@ -1,23 +1,25 @@
-import { DataKeuangan } from "@/interface/type";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { db } from '../../db';
 
-
-export const updateTabungan = async (id: string, key: string, keyData: string, value: number | string): Promise<void> => {
+export const updateTabungan = async (
+    id: string,             // ID dari data yang ingin diupdate
+    column: string,         // Kolom mana yang ingin diupdate (contoh: 'tabungan')
+    value: string | number  // Nilai baru untuk kolom tersebut
+): Promise<boolean> => {
     try {
-        const storedData = await AsyncStorage.getItem(key)
-        let datas: DataKeuangan[] = storedData ? JSON.parse(storedData) : []
+        const database = await db;
+        await database?.withTransactionAsync(async () => {
+            console.log(`Updating ${column} to ${value} where id = ${id}`);
+            await database?.runAsync(
+                `UPDATE data_keuangan SET ${column} = ? WHERE id = ?`,
+                [value, id]
+            );
 
-        // update data berdasarkan data yang di pilih 
-        const updated = datas.map((item) => {
-            if (item.id === id) {
-                return { ...item, [keyData]: value }
-            }
-            return item;
         })
 
-        await AsyncStorage.setItem(key, JSON.stringify(updated));
-        console.log('data berhasil di update oke')
+        console.log('Tabungan berhasil diperbarui');
+        return true;
     } catch (error) {
-        console.error('data gagal di update', error)
+        console.error('Gagal memperbarui tabungan:', error);
+        return false;
     }
-}
+};

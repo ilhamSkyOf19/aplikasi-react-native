@@ -1,21 +1,17 @@
-import { DataTercapai } from "@/interface/type";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { db } from "../../db";
 
-export const deleteDataTercapai = async (id: string, key: string,): Promise<void> => {
+export const deleteDataTercapai = async (id: string): Promise<boolean> => {
     try {
-        const storedData = await AsyncStorage.getItem(key);
-        let datas: DataTercapai[] = storedData ? JSON.parse(storedData) : [];
+        const database = await db;
 
-        if (datas && datas.length > 0) {
+        await database?.withTransactionAsync(async () => {
+            await database?.runAsync(`DELETE FROM data_setoran WHERE idKeuangan = ?`, [id]);
+            await database?.runAsync(`DELETE FROM data_keuangan WHERE id = ?`, [id]);
+        });
 
-            const filterDatas = datas.filter((item) => item.id !== id);
-            await AsyncStorage.setItem(key, JSON.stringify(filterDatas));
-            console.log('data berhasil dihapus');
-        } else {
-            console.log('data not found')
-            return;
-        }
+        return true;
     } catch (error) {
-        console.error('gagal dihapus', error);
+        console.error('Gagal menghapus data:', error);
+        return false;
     }
 };

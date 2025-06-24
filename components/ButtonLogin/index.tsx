@@ -5,11 +5,13 @@ import { StyleSheet, Text, TouchableOpacity } from 'react-native'
 
 interface ButtonLoginProps {
     handleButton: () => void
+    color?: string
+    colorText?: string
 }
-const ButtonLogin: React.FC<ButtonLoginProps> = ({ handleButton }) => {
+const ButtonLogin: React.FC<ButtonLoginProps> = ({ handleButton, color, colorText }) => {
     return (
         <TouchableOpacity onPress={() => handleButton()}>
-            <Text style={styles.textLogin}>Login</Text>
+            <Text style={[styles.textLogin, { backgroundColor: color, color: colorText }]}>Login</Text>
         </TouchableOpacity>
     )
 }

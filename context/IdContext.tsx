@@ -7,8 +7,8 @@ import React, { createContext, useContext, useState } from 'react';
 // ContextType
 //=========
 interface ContextType {
-    id: string;
-    setId: (id: string) => void;
+    id: number;
+    setId: (id: number) => void;
 }
 
 //=========
@@ -27,7 +27,7 @@ const idContext = createContext<ContextType | undefined>(undefined);
 // IdContextProvider
 //=========
 const IdContextProvider: React.FC<Children> = ({ children }) => {
-    const [id, setId] = useState<string>('');
+    const [id, setId] = useState<number>(0);
     return (
         <idContext.Provider value={{ id, setId }}>
             {children}

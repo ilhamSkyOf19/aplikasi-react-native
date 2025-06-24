@@ -1,12 +1,12 @@
 import { DataKeuangan } from '@/interface/type';
 import { db } from '../../db';
 
-export const getDataTercapai = async (status: string): Promise<DataKeuangan[]> => {
+export const getDataKeuangan = async (typeData: string, status: string): Promise<DataKeuangan[]> => {
     try {
         // ambil data
         const result = (await db).getAllAsync<DataKeuangan>(
-            `SELECT * FROM data_keuangan WHERE tercapai = ? ORDER BY date DESC`,
-            [status]
+            `SELECT * FROM data_keuangan WHERE typeData = ? AND tercapai = ? ORDER BY date DESC`,
+            [typeData, status]
         );
 
         // kembalikan response

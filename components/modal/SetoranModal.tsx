@@ -2,11 +2,10 @@ import StyleInput from '@/components/input/StyleInput';
 import ComponentSnackbar from '@/components/Snackbar';
 import { useIdContext } from '@/context/IdContext';
 import { useBorderInputUseRefModal } from '@/hooks/BorderInputUseRefModal';
-import { DataKeuangan, DataPathSetoran, DataSetoran } from '@/interface/type';
+import { DataKeuangan, DataSetoran, TypeData } from '@/interface/type';
 import { addDataSetoran } from '@/service/addService/addSetoran.service';
-import { getData } from '@/service/getData/get.service';
+import { getDataKeuangan } from '@/service/getData/getDataKeuangan.service';
 import { getDataSetoran } from '@/service/getData/getSetoran.service';
-import { kurangTabungan } from '@/service/updateService/kurangTabungan.service';
 import { updateSetoran } from '@/service/updateService/updateSetoran.service';
 import { formatNumber, formattedNonDecimal, height, width } from '@/utils/utils';
 import React, { memo, RefObject, useCallback, useEffect, useMemo, useState } from 'react';
@@ -28,6 +27,7 @@ const SetoranModal: React.FC<ModalProps> = ({ isVisible, onCancel, title, idSeto
     const [data, setData] = useState<DataKeuangan | null>(null);
     const [setoran, setSetoran] = useState<DataSetoran | null>(null);
     const [dataTabungan, setDataTabungan] = useState<number | undefined>(undefined);
+    const [TypeData, setTypeData] = useState<TypeData>('');
 
     const [trigerMaxInputNominal, setTrigerMaxInputNominal] = useState<boolean>(false);
     const [trigerMaxInputKet, setTrigerMaxInputKet] = useState<boolean>(false);
@@ -38,22 +38,24 @@ const SetoranModal: React.FC<ModalProps> = ({ isVisible, onCancel, title, idSeto
         return (data?.target ?? 0) - (data?.tabungan ?? 0);
     }, [data?.target, data?.tabungan]);
 
+    // =========
+    // State Type Data 
+    // =========
+    useEffect(() => {
+        if (type === 'harian') setTypeData('dataHarian');
+        else if (type === 'mingguan') setTypeData('dataMingguan');
+        else if (type === 'bulanan') setTypeData('dataBulanan');
+    }, [type]);
     //=========
     // Effects for Fetching Data
     //==========
     useEffect(() => {
         const fetchData = async () => {
             let sumberData: DataKeuangan[] | null | undefined = [];
-            if (type === 'harian') {
-                sumberData = await getData('dataKeuanganHarian', 'belum');
-            } else if (type === 'mingguan') {
-                sumberData = await getData('dataKeuanganMingguan', 'belum');
-            } else if (type === 'bulanan') {
-                sumberData = await getData('dataKeuanganBulanan', 'belum');
-            }
+            sumberData = await getDataKeuangan(TypeData, 'belum');
 
             if (sumberData !== null && sumberData !== undefined) {
-                const foundData = sumberData?.find((data) => data.id === id) || null;
+                const foundData = sumberData?.find((data) => data.id === Number(id)) || null;
                 setData(foundData || null);
                 setDataTabungan(foundData?.tabungan);
             }
@@ -67,13 +69,8 @@ const SetoranModal: React.FC<ModalProps> = ({ isVisible, onCancel, title, idSeto
     useEffect(() => {
         const fetchData = async () => {
             let sumberData: DataSetoran[] | null | undefined = [];
-            if (type === 'harian') {
-                sumberData = await getDataSetoran('dataSetoranHarian');
-            } else if (type === 'mingguan') {
-                sumberData = await getDataSetoran('dataSetoranMingguan');
-            } else if (type === 'bulanan') {
-                sumberData = await getDataSetoran('dataSetoranBulanan');
-            }
+            sumberData = await getDataSetoran('typeData', TypeData);
+
 
             if (sumberData !== null && sumberData !== undefined) {
                 const foundData = sumberData?.find((data) => data.id === idSetoran) || null;
@@ -86,13 +83,14 @@ const SetoranModal: React.FC<ModalProps> = ({ isVisible, onCancel, title, idSeto
     //=========
     // Setting Default Values for Amount and Keterangan
     //==========
-    console.log('ini id setoran', idSetoran)
-    console.log('setoran', setoran?.setoran)
-    console.log(typeModal)
-    console.log(amount, 'data')
+    // console.log('ini id setoran', idSetoran)
+    // console.log('setoran', setoran?.setoran)
+    // console.log('type Modal', typeModal)
+    // console.log('kurang or tambah:', kurangOrTambah)
+    // console.log(amount, 'data')
 
     useEffect(() => {
-        if (idSetoran === '') {
+        if (idSetoran === null) {
             setAmount('');
             setKeterangan('');
             setPlaySnackbar(false);
@@ -107,18 +105,22 @@ const SetoranModal: React.FC<ModalProps> = ({ isVisible, onCancel, title, idSeto
     //=========
     // Handle Change Nominal
     //==========
+    console.log('data:', data?.target || 0)
+
     const handleChangeTextNominal = useCallback((value: string): void => {
-        if (!data) {
-            return;
-        }
+
         const numericValue: string = value.replace(/\D/g, '');
         const formattedValue: number = parseInt(numericValue, 10) || 0;
         const maxValue: number = kurang || 0;
 
         if (typeModal === 'update') {
+            if (!data) {
+                return;
+            }
             if (data && formattedValue <= data?.target) {
                 setAmount(formatNumber(value));
             } else {
+                console.log('ini error')
                 setTrigerMaxInputNominal(true);
                 setAmount(formatNumber(data?.target.toString()));
             }
@@ -132,14 +134,19 @@ const SetoranModal: React.FC<ModalProps> = ({ isVisible, onCancel, title, idSeto
                 setAmount(formatNumber(maxValue.toString()));
             }
         } else if (kurangOrTambah === 'kurang') {
-            if (formattedValue <= (data?.tabungan || 0)) {
+            if (!data) {
+                return;
+            }
+            if (formattedValue <= (data?.tabungan)) {
                 setAmount(formatNumber(value));
             } else {
                 setTrigerMaxInputNominal(true);
                 setAmount(formatNumber(data?.tabungan.toString()));
             }
         }
-    }, [amount, kurangOrTambah, typeModal]);
+    }, [amount, kurangOrTambah, typeModal, isVisible]);
+
+    console.log('kurang or tambah', kurangOrTambah)
 
     //=========
     // Handle Close Snackbar
@@ -172,8 +179,7 @@ const SetoranModal: React.FC<ModalProps> = ({ isVisible, onCancel, title, idSeto
         if (typeModal !== 'update' && type) {
             let data: DataSetoran | null = null;
             data = {
-                id: '',
-                idKeuangan: id,
+                idKeuangan: Number(id),
                 setoran: Number(formattedNonDecimal(amount)),
                 plus: kurangOrTambah === 'tambah' ? true : false,
                 date: new Date().toISOString(),
@@ -181,15 +187,7 @@ const SetoranModal: React.FC<ModalProps> = ({ isVisible, onCancel, title, idSeto
             };
 
             if (data !== null) {
-                let path: DataPathSetoran = '';
-                if (type === 'harian') {
-                    path = 'dataSetoranHarian';
-                } else if (type === 'mingguan') {
-                    path = 'dataSetoranMingguan';
-                } else if (type === 'bulanan') {
-                    path = 'dataSetoranBulanan';
-                }
-                await addDataSetoran(data, path);
+                await addDataSetoran(data, TypeData);
                 onCancel();
                 setAmount('');
                 setKeterangan('');
@@ -199,15 +197,15 @@ const SetoranModal: React.FC<ModalProps> = ({ isVisible, onCancel, title, idSeto
                     if (dataTabungan === null) {
                         return;
                     }
-                    const dataKurang = (dataTabungan ?? 0) - Number(formattedNonDecimal(amount));
-                    if (dataKurang >= 0) {
-                        await kurangTabungan(id, dataKurang, keterangan, path);
-                        setAmount('');
-                        setKeterangan('');
-                        console.log('data dikurangi baru');
-                    } else {
-                        return console.log('salah');
-                    }
+                    // const dataKurang = (dataTabungan ?? 0) - Number(formattedNonDecimal(amount));
+                    // if (dataKurang >= 0) {
+                    //     await kurangTabungan(id.toString(), dataKurang, keterangan, TypeData);
+                    //     setAmount('');
+                    //     setKeterangan('');
+                    //     console.log('data dikurangi baru');
+                    // } else {
+                    //     return console.log('salah');
+                    // }
                 }
             } else {
                 return;
@@ -216,15 +214,7 @@ const SetoranModal: React.FC<ModalProps> = ({ isVisible, onCancel, title, idSeto
             if (setoran === null) {
                 return;
             }
-            let path: DataPathSetoran = '';
-            if (type === 'harian') {
-                path = 'dataSetoranHarian';
-            } else if (type === 'mingguan') {
-                path = 'dataSetoranMingguan';
-            } else if (type === 'bulanan') {
-                path = 'dataSetoranBulanan';
-            }
-            await updateSetoran(idSetoran || '', Number(formattedNonDecimal(amount)), keterangan, path);
+            await updateSetoran(idSetoran?.toString() || '', Number(formattedNonDecimal(amount)), keterangan);
             setAmount('');
             setKeterangan('');
             onCancel();

@@ -1,25 +1,23 @@
-import { DataSetoran } from "@/interface/type";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { db } from '../../db';
 
 export const updateSetoran = async (
-    id: string,          // ID dari data yang ingin diubah
-    valueSetoran: number,       // Nama field yang ingin diubah (misal: 'nama', 'jumlah', dll)
-    valueKeterangan: string,     // Nilai baru untuk field tersebut
-    key: string
-): Promise<void> => {
+    id: string,              // ID dari baris yang ingin di-update
+    valueSetoran: number,    // Nilai baru untuk kolom 'setoran'
+    valueKeterangan: string  // Nilai baru untuk kolom 'ket'
+): Promise<boolean> => {
     try {
-        const storedData = await AsyncStorage.getItem(key);
-        let datas: DataSetoran[] = storedData ? JSON.parse(storedData) : [];
+        const database = await db;
+        database?.withTransactionAsync(async () => {
+            await database?.runAsync(
+                `UPDATE data_setoran SET setoran = ?, ket = ? WHERE id = ?`,
+                [valueSetoran, valueKeterangan, id]
+            );
+        })
 
-        // Update data berdasarkan ID dan field yang dipilih
-        const updated = datas.map(item =>
-            item.id === id ? { ...item, setoran: valueSetoran, ket: valueKeterangan } : item
-        );
-
-        // Simpan kembali ke AsyncStorage
-        await AsyncStorage.setItem(key, JSON.stringify(updated));
-        console.log('data berhasil di update');
+        console.log('Data setoran berhasil diupdate');
+        return true;
     } catch (error) {
-        console.error('Gagal mengubah data:', error);
+        console.error('Gagal mengupdate data setoran:', error);
+        return false;
     }
 };

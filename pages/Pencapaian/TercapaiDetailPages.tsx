@@ -1,8 +1,9 @@
 import DeleteModal from '@/components/modal/DeleteModal';
 import { useModalDeleteTercapaiContext } from '@/context/ModalDeleteTercapaiContext';
 import { CurrencyInfo, currencyList } from '@/data/typeCurrency';
-import { DataSetoran, DataTercapai, SelectedType } from '@/interface/type';
+import { DataKeuangan, DataSetoran } from '@/interface/type';
 import { getDataTercapai } from '@/service/getData/getDataTercapai.service';
+import { getDataSetoran } from '@/service/getData/getSetoran.service';
 import { formatCurrency, height, waktuTercapai, width } from '@/utils/utils';
 import { formatDate } from 'date-fns';
 import { useLocalSearchParams } from 'expo-router';
@@ -13,7 +14,8 @@ const TercapaiDetailPages: React.FC = () => {
     //=================
     // State
     //=================
-    const [data, setData] = useState<DataTercapai | undefined>(undefined); // data yang diambil dari localStorage
+    const [data, setData] = useState<DataKeuangan | undefined>(undefined); // data yang diambil dari localStorage
+    const [dataSetoran, setDataSetoran] = useState<DataSetoran[]>([]); // data yang diambil dari localStorage
     const { isModalDeleteTercapai, setIsModalDeleteTercapai } = useModalDeleteTercapaiContext(); // kontrol modal delete
     const [tanggalDibuat, setTanggalDibuat] = useState<string>(''); // tanggal target dibuat
     const [tanggalFinish, setTanggalFinish] = useState<string>(''); // tanggal terakhir setoran
@@ -37,10 +39,15 @@ const TercapaiDetailPages: React.FC = () => {
     //=================
     useEffect(() => {
         const fetchData = async () => {
-            const result = await getDataTercapai('dataTercapai');
+            const result = await getDataTercapai('tercapai');
             if (result) {
-                const findResult = result.find((item) => item.id === id);
+                const findResult = result.find((item) => String(item.id) === String(id));
                 setData(findResult);
+            }
+
+            const resultSetoran = await getDataSetoran('idKeuangan', id);
+            if (resultSetoran) {
+                setDataSetoran(resultSetoran);
             }
         };
         fetchData();
@@ -51,7 +58,7 @@ const TercapaiDetailPages: React.FC = () => {
     //=================
     useEffect(() => {
         setTanggalDibuat(data?.date || '');
-        setTanggalFinish(data?.dataSetoran[data?.dataSetoran.length - 1]?.date || '');
+        setTanggalFinish(data?.dateTercapai || '');
     }, [data]);
 
     //=================
@@ -88,12 +95,12 @@ const TercapaiDetailPages: React.FC = () => {
                         <ImgComponent img={data.img} />
 
                         <ContentOneComponent target={data.target} currencyList={currencySelected} handleDateTercapai={handleDateTercapai} tanggalDibuat={tanggalDibuat} tanggalFinish={tanggalFinish} />
-                        <ContentSetoranComponent dataSetoran={data.dataSetoran} currencyList={currencySelected} />
+                        <ContentSetoranComponent dataSetoran={dataSetoran} currencyList={currencySelected} />
                     </View>
                 ) : null}
             </ScrollView>
             <View>
-                <DeleteModal isVisible={isModalDeleteTercapai} onCancel={onCancelModalTercapai} id={id} typeModal={'deleteTercapai'} typeData={(data?.typeData) as SelectedType} />
+                <DeleteModal isVisible={isModalDeleteTercapai} onCancel={onCancelModalTercapai} id={id} typeModal={'deleteTercapai'} />
             </View>
         </>
 
@@ -139,7 +146,6 @@ const ImgComponent: React.FC<ComponentPops> = ({ img }) => {
 }
 
 const ContentOneComponent: React.FC<ComponentPops> = ({ target, currencyList, handleDateTercapai, tanggalDibuat, tanggalFinish }) => {
-    // console.log('currencyList', currencyList)
     return (
         <>
             {

@@ -15,8 +15,12 @@ import { CurrencyProvider } from "@/context/CurencyContext";
 import { ModalDeleteTabunganProvider, useModalDeleteTabungan } from "@/context/ModalDeleteTabunganContext";
 import { ModalDeleteTercapaiProvider, useModalDeleteTercapaiContext } from "@/context/ModalDeleteTercapaiContext";
 import { DataKeuangan } from "@/interface/type";
-import { getData } from "@/service/getData/get.service";
+import { dataKeuanganModel } from "@/models/dataKeuanganModel";
+import { dataSetoranModel } from "@/models/dataSetoranModel";
+import { getDataKeuangan } from "@/service/getData/getDataKeuangan.service";
 import { height, width } from "@/utils/utils";
+import 'react-native-get-random-values';
+
 
 
 // ==================
@@ -34,6 +38,13 @@ interface PropCustomHeader {
     url: 'add' | 'tercapai' | 'setoran' | '';
 }
 export default function Layout() {
+    // ==========
+    // Create Tabel Data Keuangan
+    // ==========
+    useEffect(() => {
+        dataKeuanganModel();
+        dataSetoranModel();
+    }, [])
     //==========
     // Routing: Ambil Pathname Saat Ini
     //==========
@@ -91,7 +102,7 @@ export default function Layout() {
                     <CurrencyProvider>
                         <ModalDeleteTabunganProvider>
                             <ModalDeleteTercapaiProvider>
-                                <StatusBar translucent backgroundColor="transparent" barStyle={pathname.includes('setoran') || pathname.includes('add') || pathname.includes('tercapai') || pathname.includes('login') ? 'dark-content' : 'light-content'} />
+                                <StatusBar translucent backgroundColor="transparent" barStyle={pathname.includes('setoran') || pathname.includes('add') || pathname.includes('tercapai') || pathname.includes('login') || pathname.includes('editProfile') ? 'dark-content' : 'light-content'} />
                                 <Stack screenOptions={{ headerShown: false }}>
                                     {/* Tabs utama */}
                                     <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -146,6 +157,12 @@ export default function Layout() {
                                             headerShown: false,
                                         }}
                                     />
+                                    <Stack.Screen
+                                        name="editProfile"
+                                        options={{
+                                            headerShown: false,
+                                        }}
+                                    />
 
                                 </Stack>
                             </ModalDeleteTercapaiProvider>
@@ -179,6 +196,8 @@ const CustomSettingsHeader: React.FC<CustomSettingsHeaderProps> = ({ name }) => 
 
 
 const CustomSetoranHeader: React.FC<PropCustomHeader> = ({ url }) => {
+    const { triger, setTriger } = useContextAdd();
+    const { id } = useIdContext();
     //==========
     // Header State & Route Param
     //==========
@@ -199,13 +218,10 @@ const CustomSetoranHeader: React.FC<PropCustomHeader> = ({ url }) => {
     //==========
     // Effect: Set Header Berdasarkan URL atau Param
     //==========
-    useEffect(() => {
-        if (url === 'add') {
-            setIsHeader(selected);
-        } else if (url === 'setoran') {
-            setIsHeader(header || '');
-        }
-    }, [url, selected]);
+    // useEffect(() => {
+
+    // }, [url]);
+
 
 
     //==========
@@ -216,14 +232,16 @@ const CustomSetoranHeader: React.FC<PropCustomHeader> = ({ url }) => {
             const fetchData = async () => {
                 let getDatas: DataKeuangan[] | null | undefined = [];
                 if (typeData === 'harian') {
-                    getDatas = await getData('dataKeuanganHarian', 'belum');
+                    getDatas = await getDataKeuangan('dataHarian', 'belum');
                 } else if (typeData === 'mingguan') {
-                    getDatas = await getData('dataKeuanganMingguan', 'belum');
+                    getDatas = await getDataKeuangan('dataMingguan', 'belum');
                 } else if (typeData === 'bulanan') {
-                    getDatas = await getData('dataKeuanganBulanan', 'belum');
+                    getDatas = await getDataKeuangan('dataBulanan', 'belum');
                 }
 
-                if (getDatas !== null && getDatas !== undefined) {
+                console.log('getDatas', getDatas);
+
+                if (getDatas) {
                     const found = getDatas.find((data) => data.id === id)?.nama || null;
                     setIsHeader(found || '');
                 }
@@ -231,15 +249,18 @@ const CustomSetoranHeader: React.FC<PropCustomHeader> = ({ url }) => {
 
             if (url === 'setoran') {
                 fetchData();
+            } else if (url === 'add') {
+                setIsHeader(selected);
             }
         }, [url])
     );
 
 
+
     //==========
     // State: Tambah Tabungan
     //==========
-    const { setTriger } = useContextAdd();
+
 
     const handleAddTabungan = useCallback((): void => {
         setTriger(true);
@@ -266,7 +287,7 @@ const CustomSetoranHeader: React.FC<PropCustomHeader> = ({ url }) => {
     //==========
     // Handle Edit Navigasi
     //==========
-    const { id } = useIdContext();
+
 
     const handleEdit = useCallback((params: { [key: string]: string }): void => {
         router.push({
@@ -287,7 +308,7 @@ const CustomSetoranHeader: React.FC<PropCustomHeader> = ({ url }) => {
             {/* icon delete and edit  */}
             {url === 'setoran' && (
                 <View style={styles.containerIconHeader}>
-                    <TouchableOpacity onPress={() => handleEdit({ id, tipe: 'edit', typeData: selected })} style={styles.paddingIcon}>
+                    <TouchableOpacity onPress={() => handleEdit({ id: id.toString(), tipe: 'edit', typeData: selected })} style={styles.paddingIcon}>
                         <MaterialIcons name="edit" size={20} color="gray" />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={handleDelete} style={styles.paddingIcon}>

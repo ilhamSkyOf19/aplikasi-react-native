@@ -1,12 +1,17 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { db } from "../../db";
 
-export const deleteAll = async (key: string) => {
+export const deleteAllData = async (): Promise<boolean> => {
     try {
-        // Hapus data dari AsyncStorage
-        await AsyncStorage.removeItem(key);
+        const database = await db;
 
-        console.log('data berhasil dihapus');
+        database?.withTransactionAsync(async () => {
+            await database?.runAsync(`DELETE FROM data_setoran`);
+            await database?.runAsync(`DELETE FROM data_keuangan`);
+        });
+
+        return true;
     } catch (error) {
-        console.error('Gagal menghapus data', error);
+        console.error('Gagal menghapus data:', error);
+        return false;
     }
 };

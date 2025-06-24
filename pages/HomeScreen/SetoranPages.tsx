@@ -5,11 +5,12 @@ import ButtonSmall from '@/components/ui/ButtonSmall';
 import { useIdContext } from '@/context/IdContext';
 import { useModalDeleteTabungan } from '@/context/ModalDeleteTabunganContext';
 import { CurrencyInfo, currencyList } from '@/data/typeCurrency';
-import { DataKeuangan, DataPath, DataSetoran, DataTercapai } from '@/interface/type';
-import { addDataTercapai } from '@/service/addService/addDataTercapai.service';
-import { getData } from '@/service/getData/get.service';
+import { DataKeuangan, DataSetoran, TypeData } from '@/interface/type';
+import { getDataKeuangan } from '@/service/getData/getDataKeuangan.service';
+import { updateTabunganMulti } from '@/service/updateService/updateTercapai.service';
 import { formatCurrency, formatDate, formatPersentase, getProgressColor, height, penghitunganKurang, width } from '@/utils/utils';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -32,10 +33,10 @@ interface PropsText {       // Props Text
     date: string;
     ket: string;
     handleVisibleRiwayat: () => void;
-    handleID: (data: string) => void;
+    handleID: (data: number) => void;
     handleTitle: (title: string) => void;
-    id: string;
-    idSetoran: string;
+    id: number;
+    idSetoran: number;
     currency: CurrencyInfo
 }
 
@@ -59,15 +60,16 @@ interface TextTargetAndSetoranComponentProps {     // Props Text Target & Setora
 }
 
 
+
 interface PropsContentTwo {                 // Props Content Two
     handleTitle: (title: string) => void;
     handleVisible: () => void;
     handleVisibleRiwayat: () => void;
     kekurangan: number;
     terkumpul: number;
-    handleID: (data: string) => void;
+    handleID: (data: number) => void;
     datas?: DataKeuangan; // Array dari DataSetoran
-    setIsIdSetoran: (value: string | undefined) => void;
+    setIsIdSetoran: (value: number | undefined) => void;
     datasSetoran: DataSetoran[];
     setKurangOrTambah: (value: string) => void;
     currency: CurrencyInfo
@@ -79,10 +81,13 @@ const SetoranPages: React.FC = () => {
     // =======================
     // Navigation & Context
     // =======================
-    const params = useLocalSearchParams<{ typeData?: string }>();
-    const { typeData } = params;
-    const { id } = useIdContext();
+    const navigation = useNavigation();
+
+    const params: { id: string; typeData: string } = useLocalSearchParams();
+    const { id, typeData } = params;
+    // const { id } = useIdContext();
     const { isVisibleModalDeleteTabungan, setVisibleModalDeleteTabungan } = useModalDeleteTabungan();
+
 
     // =======================
     // State - UI Modal / Popups
@@ -94,8 +99,8 @@ const SetoranPages: React.FC = () => {
     // State - Modal Handling
     // =======================
     const [typeModal, setTypeModal] = useState<string>('');
-    const [isIdSetoran, setIsIdSetoran] = useState<string | undefined>(undefined);
-    const [dataIdSetoranModal, setDataIdSetoranModal] = useState<string>('');
+    const [isIdSetoran, setIsIdSetoran] = useState<number | undefined>(undefined);
+    const [dataIdSetoranModal, setDataIdSetoranModal] = useState<number | null>(null);
 
     // =======================
     // State - Data Keuangan
@@ -113,7 +118,11 @@ const SetoranPages: React.FC = () => {
     const [persentase, setPersentase] = useState<number>(0);
     const [kurang, setKurang] = useState<number>(0);
     const [kurangOrTambah, setKurangOrTambah] = useState<string>('');
-    console.log
+
+    // ======================
+    // state type db
+    // ======================
+    const [typeDb, setTypeDb] = useState<TypeData>('');
 
     // =======================
     // State - Lainnya
@@ -129,18 +138,19 @@ const SetoranPages: React.FC = () => {
         setTitle(newTitle);
     }, []);
 
-    const handleVisible = useCallback((id?: string, typeModal?: string) => {
-        setIsIdSetoran(id || undefined);
+    const handleVisible = useCallback((id?: number, typeModal?: string, kurangOrTambah?: string) => {
+        setIsIdSetoran(id ?? 0);
         setTypeModal(typeModal || '');
         setIsPlayVisible((prev) => !prev);
         setIsPlayVisibleRiwayat(false);
+        setKurangOrTambah(kurangOrTambah || '');
     }, []);
 
     const handleVisibleRiwayat = useCallback(() => {
         setIsPlayVisibleRiwayat((prev) => !prev);
     }, []);
 
-    const handleID = useCallback((data: string) => {
+    const handleID = useCallback((data: number) => {
         setDataIdSetoranModal(data);
     }, []);
 
@@ -151,44 +161,66 @@ const SetoranPages: React.FC = () => {
     // =======================
     // useFocusEffect - Get Data Keuangan
     // =======================
-    useFocusEffect(useCallback(() => {
-        const fetchData = async () => {
-            let getDatas: DataKeuangan[] | null | undefined = [];
-            if (typeData === 'harian') getDatas = await getData('dataKeuanganHarian', 'belum');
-            if (typeData === 'mingguan') getDatas = await getData('dataKeuanganMingguan', 'belum');
-            if (typeData === 'bulanan') getDatas = await getData('dataKeuanganBulanan', 'belum');
+    useFocusEffect(
+        useCallback(() => {
+            const fetchData = async () => {
+                if (!id || !typeDb) return;
 
-            if (getDatas) {
-                const found = getDatas.find((data) => data.id === id) || null;
-                setDatas(found);
-            }
-        };
-        fetchData();
-    }, [typeData, id]));
+                setLoading(true);
+                try {
+                    const getDatas = await getDataKeuangan(typeDb, 'belum');
+                    if (getDatas) {
+                        const found = getDatas.find((data) => data.id === Number(id)) || null;
+                        setDatas(found);
+                    }
+                } catch (error) {
+                    console.error('Gagal mengambil data:', error);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            fetchData();
+        }, [id, typeDb])
+    );
+
+
 
     // =======================
     // useFocusEffect - Get Data Setoran
     // =======================
-    useFocusEffect(useCallback(() => {
-        const fetchData = async () => {
-            try {
-                let getDatas: DataSetoran[] | null | undefined = [];
-                if (typeData === 'harian') getDatas = await getDataSetoran('dataSetoranHarian');
-                if (typeData === 'mingguan') getDatas = await getDataSetoran('dataSetoranMingguan');
-                if (typeData === 'bulanan') getDatas = await getDataSetoran('dataSetoranBulanan');
+    useFocusEffect(
+        useCallback(() => {
+            const fetchData = async () => {
+                try {
+                    let getDatas: DataSetoran[] | null | undefined = [];
+                    getDatas = await getDataSetoran('typeData', typeDb);
 
-                if (getDatas) {
-                    const found = getDatas.filter((data) => data.idKeuangan === id) || null;
-                    setDatasSetoran(found);
+
+                    if (getDatas) {
+                        const found = getDatas.filter((data) => data.idKeuangan === Number(id)) || null;
+                        setDatasSetoran(found);
+                    }
+                } catch (error) {
+                    console.log(error);
+                } finally {
+                    setLoading(false);
                 }
-            } catch (error) {
-                console.log(error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchData();
-    }, [typeData, id, tabungan, isPlayVisible, isPlayVisibleRiwayat]));
+            };
+            fetchData();
+        }, [typeData, id, tabungan, isPlayVisible, isPlayVisibleRiwayat, typeDb]));
+
+
+    // ====================
+    // UserEffect type db 
+    // ====================
+    useEffect(() => {
+        if (typeData === 'harian') setTypeDb('dataHarian');
+        if (typeData === 'mingguan') setTypeDb('dataMingguan');
+        if (typeData === 'bulanan') setTypeDb('dataBulanan');
+    }, [typeData])
+
+
 
     // =======================
     // useEffect - Tabungan Berdasarkan Setoran
@@ -201,7 +233,7 @@ const SetoranPages: React.FC = () => {
         } else {
             setTabungan(0);
         }
-    }, [datasSetoran, isPlayVisible, isPlayVisibleRiwayat]);
+    }, [datasSetoran, isPlayVisible, isPlayVisibleRiwayat, typeDb]);
 
     // =======================
     // useEffect - Currency
@@ -229,54 +261,24 @@ const SetoranPages: React.FC = () => {
         if (tabungan === undefined) return;
 
         const fetchData = async () => {
-            let path: DataPath = '';
-            if (typeData === 'harian') path = 'dataKeuanganHarian';
-            if (typeData === 'mingguan') path = 'dataKeuanganMingguan';
-            if (typeData === 'bulanan') path = 'dataKeuanganBulanan';
-
-            if (path) await updateTabungan(id, path, 'tabungan', tabungan);
+            if (typeData) await updateTabungan(id?.toString() || '', 'tabungan', tabungan);
         };
 
         const dataTercapai = async () => {
             if (tabungan !== datas?.target) return;
-            let path: DataPath = '';
-            if (typeData === 'harian') path = 'dataKeuanganHarian';
-            if (typeData === 'mingguan') path = 'dataKeuanganMingguan';
-            if (typeData === 'bulanan') path = 'dataKeuanganBulanan';
-
-            if (path) await updateTabungan(id, path, 'tercapai', 'tercapai');
-        };
-
-        // Set Data Tercapai
-        const setDataTercapai = async () => {
-            if (tabungan !== datas?.target) return;
-
-            const setoran = datasSetoran?.map(item => ({
-                ...item,
-                idKeuangan: '',
-            })) || [];
-
-            const data: DataTercapai = {
-                id,
-                idCurrency: datas?.idCurrency || 0,
-                img: datas?.img || '',
-                nama: datas?.nama || '',
-                target: datas?.target || 0,
-                targetSetoran: datas?.targetSetoran || 0,
-                tabungan: tabungan || 0,
-                date: datas?.date || '',
-                dataSetoran: setoran,
-                typeData: typeData || '',
-            };
-
-            await addDataTercapai('dataTercapai', data);
+            const dateTercapai = new Date().toISOString();
+            if (typeData) {
+                await updateTabunganMulti(id?.toString() || '', {
+                    tercapai: 'tercapai',
+                    dateTercapai: dateTercapai
+                });
+            }
             router.back();
         };
 
         const fetchAll = async () => {
             await fetchData();
             await dataTercapai();
-            await setDataTercapai();
         };
 
         fetchAll();
@@ -324,10 +326,10 @@ const SetoranPages: React.FC = () => {
                         </View>
                     </ScrollView>
                     <View>
-                        <SetoranModal isVisible={isPlayVisible} onCancel={handleVisible} title={title} idSetoran={isIdSetoran ?? ''} type={typeData ?? ''} kurangOrTambah={kurangOrTambah} typeModal={typeModal ?? ''} />
+                        <SetoranModal isVisible={isPlayVisible} onCancel={handleVisible} title={title} idSetoran={isIdSetoran || 0} type={typeData ?? ''} kurangOrTambah={kurangOrTambah} typeModal={typeModal ?? ''} />
                     </View>
                     <View>
-                        <RiwayatModal isVisible={isPlayVisibleRiwayat} onCancel={handleVisibleRiwayat} idSetoran={dataIdSetoranModal} handleEdit={handleVisible} type={typeData ?? ''} currency={selectedCurrency as CurrencyInfo} />
+                        <RiwayatModal isVisible={isPlayVisibleRiwayat} onCancel={handleVisibleRiwayat} idSetoran={dataIdSetoranModal ?? 0} handleEdit={handleVisible} type={typeData ?? ''} currency={selectedCurrency as CurrencyInfo} />
                     </View>
                     <View>
                         <DeleteModal isVisible={isVisibleModalDeleteTabungan} onCancel={onCancelModalTabungan} id={id} typeModal={'deleteTabungan'} />
@@ -453,8 +455,8 @@ export const ContentTwo: React.FC<PropsContentTwo> = ({ handleVisible, handleTit
                     datasSetoran.map((setoran) => (
                         <TextSetoran
                             key={setoran.id} // ID diambil dari dataSetoran
-                            id={datas?.id ?? ''} // ID utama dari dataKeuangan
-                            idSetoran={setoran.id}
+                            id={Number(datas?.id)} // ID utama dari dataKeuangan
+                            idSetoran={Number(setoran?.id)} // ID setoran
                             setoran={setoran.setoran} // Nilai setoran
                             plus={setoran.plus} // Status setoran
                             date={formatDate(setoran.date, 'dd MMM yyyy')} // Format tanggal

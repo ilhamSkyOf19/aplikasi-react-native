@@ -1,12 +1,12 @@
 import { CurrencyInfo, currencyList } from '@/data/typeCurrency'
-import { DataTercapai } from '@/interface/type'
+import { DataKeuangan } from '@/interface/type'
 import { formatCurrency, height, waktuTercapai, width } from '@/utils/utils'
 import { useRouter } from 'expo-router'
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 interface CardListTercapaiProps {
-    dataTercapai: DataTercapai;
+    dataTercapai: DataKeuangan;
 }
 
 // currency
@@ -26,7 +26,7 @@ const CardListTercapai: React.FC<CardListTercapaiProps> = ({ dataTercapai }) => 
 
     // handle date 
     const handleDate: string = useMemo(() => {
-        return waktuTercapai(dataTercapai.dataSetoran[dataTercapai.dataSetoran.length - 1].date, dataTercapai.date);
+        return waktuTercapai(dataTercapai.dateTercapai || '', dataTercapai.date);
     }, [dataTercapai])
 
     const router = useRouter();
@@ -39,10 +39,16 @@ const CardListTercapai: React.FC<CardListTercapaiProps> = ({ dataTercapai }) => 
 
 
     return (
-        <TouchableOpacity onPress={() => handleClick({ id: dataTercapai.id })} style={styles.containerCard}>
+        <TouchableOpacity onPress={() => handleClick({ id: String(dataTercapai.id) })} style={styles.containerCard}>
             <View style={styles.containerContentLeft}>
                 <View style={styles.containerImage}>
-                    <Image source={{ uri: dataTercapai.img }} style={styles.image} />
+                    {
+                        dataTercapai.img !== '' ? (
+                            <Image source={{ uri: dataTercapai.img }} style={styles.image} />
+                        ) : (
+                            null
+                        )
+                    }
                 </View>
                 <View style={styles.containerText}>
                     <Text style={styles.text}>{dataTercapai.nama}</Text>

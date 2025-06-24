@@ -1,21 +1,19 @@
-import { DataSetoran } from "@/interface/type";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { DataSetoran, TypeData } from '@/interface/type';
+import { db } from '../../db';
 
-// get data
-export const getDataSetoran = async (key: string) => {
+
+export const getDataSetoran = async (colom: string, value: string | TypeData): Promise<DataSetoran[]> => {
     try {
-        // ambil data dari lokal storage dengan key yang sesuai
-        const storedData: string | null = await AsyncStorage.getItem(key);
+        // ambil data
+        const result = (await db).getAllAsync<DataSetoran>(
+            `SELECT * FROM data_setoran WHERE ${colom} = ? ORDER BY date DESC`,
+            [value]
+        );
 
-        // jika data ada, parse data 
-        if (storedData !== null) {
-            const dataKeungan: DataSetoran[] = JSON.parse(storedData);
-            return dataKeungan;
-        } else {
-            console.log('Data not found');
-            return null;
-        }
+        // kembalikan response
+        return result;
     } catch (error) {
-        console.error('error dari AsyncStorage', error);
+        console.error('gagal mengambil data setoran', error);
+        return [];
     }
 }

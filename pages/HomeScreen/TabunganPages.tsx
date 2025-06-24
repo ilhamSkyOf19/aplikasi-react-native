@@ -1,17 +1,20 @@
-import ButtonLogin from '@/components/ButtonLogin';
+import ModalUser from '@/components/modal/ModalUser';
 import ButtonBasic from '@/components/ui/ButtonBasic';
 import Button from '@/components/ui/ButtonTabungan';
 import IconSettings from '@/components/ui/IconSettings';
 import NotData from '@/components/ui/NotData';
 import { useSelectedNavigation } from '@/context/NavigationContext';
-import { DataKeuangan, SelectedType, TercapaiType } from '@/interface/type';
-import { getData } from '@/service/getData/get.service';
+import { DataKeuangan, SelectedType, TypeData } from '@/interface/type';
+import { getToken } from '@/service/auth/token.service';
+// import { deleteAllDataKeuangan } from '@/service/deleteService/deleteAll.service';
+import { getDataKeuangan } from '@/service/getData/getDataKeuangan.service';
 import { renderSetoran } from '@/utils/SetoranRender';
 import { height, width } from "@/utils/utils";
-import { useFocusEffect } from '@react-navigation/native';
-import { useRouter } from 'expo-router';
-import React, { memo, useCallback, useRef, useState } from 'react';
+import { FontAwesome } from '@expo/vector-icons';
+import { useFocusEffect, usePathname, useRouter } from 'expo-router';
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, Image, StyleSheet, View } from 'react-native';
+import LoadingCircle from '../../components/ui/Loading';
 const Logo = require('../../assets/images/logo.png');
 // Button List
 const button: Array<string> = ['harian', 'mingguan', 'bulanan']
@@ -28,25 +31,127 @@ interface PropsFront {                  // Props Front
     handleSettings: () => void,
     handleAbout: () => void,
     data: DataKeuangan[];
-    fetchData: (key: string, kondisi: TercapaiType) => void
     setData: (data: DataKeuangan[]) => void
+    isToken: boolean
+    userData: String | null
+    modalUser: boolean
+    handleUser: () => void
+    selected: SelectedType
+    setSelected: (item: SelectedType) => void
+    loading: boolean
 }
 
 
 
 const TabunganPagesComponent: React.FC<PropsTabungan> = ({ handleSettings, handleAbout }) => {
+    // useEffect(() => {
+    //     deleteAllData();
+    // }, [])
+    // logout();
+
+    // pathname
+    const pathname = usePathname();
     // state 
     const [data, setData] = useState<DataKeuangan[]>([]); // state data keuangan
+    const [isToken, setIsToken] = useState<boolean>(false);
+    const [userData, setUserData] = useState<String | null>(null);
+
+
+
+    const [typeData, setTypeData] = useState<TypeData>('dataHarian');
+    const { selected, setSelected } = useSelectedNavigation();
+    const [loading, setLoading] = useState<boolean>(false);
+
+
+    useEffect(() => {
+        try {
+            if (selected === 'harian') {
+                setTypeData('dataHarian');
+            } else if (selected === 'mingguan') {
+                setTypeData('dataMingguan');
+            } else {
+                setTypeData('dataBulanan');
+            }
+        } catch (error) {
+            console.log(error)
+        }
+
+    }, [selected]);
+
+    console.log(selected)
+
+
+
+    useFocusEffect(
+        useCallback(() => {
+            const fetchData = async () => {
+                try {
+                    const data = await getDataKeuangan(typeData, 'belum');
+                    if (data) {
+                        setData(data);
+                    }
+                } catch (error) {
+                    console.error('Gagal mengambil data keuangan:', error);
+                } finally {
+                    setLoading(false);
+                }
+            };
+            fetchData();
+        }, [typeData, loading])
+    );
+
+    console.log('ini data', data)
+
+
+
 
     // useCallback fetch data
-    const fetchData = useCallback(async (key: string, kondisi: TercapaiType) => {
-        const data = await getData(key, kondisi);
-        if (data) {
-            setData(data);
-        }
-    }, []);
 
-    // console.log('data', data);
+
+
+
+
+
+    // console.log('ini data', data)
+
+
+    useFocusEffect(
+        useCallback(() => {
+            const findToken = async () => {
+                const token = await getToken();
+                if (token !== null) {
+                    setUserData(token as String);
+                    setIsToken(true);
+                } else {
+                    setIsToken(false);
+                }
+            }
+            findToken();
+        }, [pathname])
+    )
+
+
+
+    // console.log(isToken)
+    // console.log(userData)
+
+    // modal user 
+    // user 
+    const [modalUser, setModalUser] = useState<boolean>(false);
+    // handle user 
+    const handleUser = useCallback(() => {
+        setModalUser((prev) => !prev);
+    }, [])
+
+    // pathname 
+
+    useEffect(() => {
+        if (pathname !== '/home') {
+            setModalUser(false);
+        }
+    }, [pathname]);
+
+
 
 
     return (
@@ -54,7 +159,7 @@ const TabunganPagesComponent: React.FC<PropsTabungan> = ({ handleSettings, handl
             <BackgroundLeft />
             <BackgroundRight />
             <View style={styles.container}>
-                <ContainerFront handleSettings={handleSettings} handleAbout={handleAbout} data={data} fetchData={fetchData} setData={setData} />
+                <ContainerFront handleSettings={handleSettings} handleAbout={handleAbout} data={data} setData={setData} isToken={isToken} userData={userData} modalUser={modalUser} handleUser={handleUser} selected={selected} setSelected={setSelected} loading={loading} />
             </View>
         </>
     )
@@ -62,31 +167,16 @@ const TabunganPagesComponent: React.FC<PropsTabungan> = ({ handleSettings, handl
 
 
 
-const ContainerFrontComponent: React.FC<PropsFront> = ({ handleSettings, handleAbout, data, fetchData, setData }) => {
-    const { selected, setSelected } = useSelectedNavigation();
+const ContainerFrontComponent: React.FC<PropsFront> = ({ handleSettings, handleAbout, data, setData, isToken, userData, modalUser, handleUser, selected, setSelected, loading }) => {
+
+
 
 
     const handleClick = useCallback((item: SelectedType): void => {
         setSelected(item);
     }, [])
 
-    useFocusEffect(
-        useCallback(() => {
-            try {
-                setData([]);
-                if (selected === 'harian') {
-                    fetchData('dataKeuanganHarian', 'belum')
-                } else if (selected === 'mingguan') {
-                    fetchData('dataKeuanganMingguan', 'belum')
-                } else {
-                    fetchData('dataKeuanganBulanan', 'belum')
-                }
-            } catch (error) {
-                console.log(error)
-            }
 
-        }, [selected])
-    );
 
 
     const router = useRouter();
@@ -108,6 +198,9 @@ const ContainerFrontComponent: React.FC<PropsFront> = ({ handleSettings, handleA
         });
     }, [])
 
+
+
+
     // scroll triger 
     const scrollY = useRef(new Animated.Value(0)).current;
 
@@ -119,7 +212,12 @@ const ContainerFrontComponent: React.FC<PropsFront> = ({ handleSettings, handleA
                     <Image source={Logo} style={styles.icon}></Image>
                     <View style={{ flexDirection: 'row', gap: 7 }}>
                         <IconSettings handleSettings={handleSettings} handleAbout={handleAbout} width={width} />
-                        <ButtonLogin handleButton={handleButtonLogin} />
+                        <FontAwesome name="user-circle" size={24} color="white" onPress={handleUser} />
+
+                        {modalUser && (
+                            <ModalUser userData={userData as string} token={isToken} />
+                        )}
+
                     </View>
                 </View>
                 <View style={styles.containerButton}>
@@ -134,32 +232,39 @@ const ContainerFrontComponent: React.FC<PropsFront> = ({ handleSettings, handleA
                     ))}
                 </View>
             </View>
-            <View style={styles.backgroundFrontBottom}>
+            {
+                loading ? (
+                    <LoadingCircle />
+                ) : (
+                    <View style={styles.backgroundFrontBottom}>
 
-                <>
-                    <Animated.FlatList
-                        data={data}
-                        keyExtractor={(item) => item.id.toString()}
-                        renderItem={renderSetoran(selected, scrollY)}
-                        ListEmptyComponent={
-                            () => <NotData />
-                        }
-                        style={[styles.containerFlatList]}
-                        ItemSeparatorComponent={() => <View style={{ height: height * 0.02 }} />}
-                        showsVerticalScrollIndicator={false}
-                        showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={{ alignItems: 'center', paddingVertical: '10%', paddingBottom: '22%' }}
-                        onScroll={Animated.event(
-                            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-                            { useNativeDriver: false }
-                        )}
-                        scrollEventThrottle={16}
-                    />
-                </>
-                <View style={styles.containerButtonAdd}>
-                    <ButtonBasic custom={styles.buttonAdd} label="Tambahkan" nameIcon="add" sizeIcon={18} customText={{ fontSize: 11 }} handleButton={[() => handleAdd({ typeData: selected, tipe: 'add' })]} />
-                </View>
-            </View>
+                        <>
+                            <Animated.FlatList
+                                data={data}
+                                keyExtractor={(item) => String(item?.id || '')}
+                                renderItem={renderSetoran(selected, scrollY)}
+                                ListEmptyComponent={
+                                    () => <NotData />
+                                }
+                                style={[styles.containerFlatList]}
+                                ItemSeparatorComponent={() => <View style={{ height: height * 0.02 }} />}
+                                showsVerticalScrollIndicator={false}
+                                showsHorizontalScrollIndicator={false}
+                                contentContainerStyle={{ alignItems: 'center', paddingVertical: '10%', paddingBottom: '22%' }}
+                                onScroll={Animated.event(
+                                    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                                    { useNativeDriver: false }
+                                )}
+                                scrollEventThrottle={16}
+                            />
+                        </>
+                        <View style={styles.containerButtonAdd}>
+                            <ButtonBasic custom={styles.buttonAdd} label="Tambahkan" nameIcon="add" sizeIcon={18} customText={{ fontSize: 11 }} handleButton={[() => handleAdd({ typeData: selected, tipe: 'add' })]} />
+                        </View>
+                    </View>
+                )
+            }
+
         </View>
     )
 }
@@ -290,6 +395,7 @@ const styles = StyleSheet.create({
         height: height / 22,
         gap: 2,
     },
+
 
 
 
