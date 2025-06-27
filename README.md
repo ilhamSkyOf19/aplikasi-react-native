@@ -64,8 +64,23 @@ Proyek ini masih dalam tahap pengembangan. Beberapa fitur masih dapat berubah at
    npx expo start
    ```
 
-🤝 Kontribusi
-Kontribusi sangat terbuka! Jika Anda memiliki ide, perbaikan, atau saran, silakan fork dan kirimkan pull request.
+
+# 🙋 Kontribusi
+
+  - Pull Request sangat terbuka! Ikuti langkah berikut:
+  - Fork repo ini
+  - Buat branch fitur: git checkout -b fitur-baru
+  - Commit: git commit -m "Tambah fitur"
+  - Push: git push origin fitur-baru
+  - Buka Pull Request ke repo utama
+
+# 📬 Kontak 
+
+📧 Email: ilhamm778866@gmail.com
+
+
+# 📄 Lisensi
+MIT License © 2025 Ilham Rohmatulloh
 
 
 
