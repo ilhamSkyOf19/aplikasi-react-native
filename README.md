@@ -1,50 +1,73 @@
-# Welcome to your Expo app 👋
+# 🐖 Aplikasi Pencatatan Celengan
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplikasi pencatatan celengan digital berbasis **React Native**. Aplikasi ini dirancang untuk membantu pengguna mencatat target tabungan mereka dan memantau pencapaiannya. Mendukung mode offline dan integrasi dengan Firebase.
 
-## Get started
+---
 
-1. Install dependencies
+## 📱 Fitur Utama
 
+- **🏠 Tab Home**  
+  Menampilkan daftar celengan yang sedang berjalan atau aktif.
+
+- **🏆 Tab Tercapai**  
+  Menampilkan daftar catatan celengan yang telah berhasil dicapai.
+
+- **🔐 Autentikasi Pengguna**  
+  Tersedia fitur login dan register menggunakan Firebase Authentication.
+
+- **👤 Halaman Profil**  
+  Menampilkan data pengguna yang sedang login.
+
+- **📴 Dukungan Offline**  
+  Menggunakan SQLite untuk menyimpan data secara lokal saat tidak terhubung ke internet.
+
+- **☁️ Firebase Integration**  
+  Sinkronisasi dan autentikasi data menggunakan Firebase.
+
+---
+
+## 🛠️ Teknologi yang Digunakan
+
+- [React Native](https://reactnative.dev/)
+- [Firebase Authentication](https://firebase.google.com/docs/auth)
+- [SQLite](https://docs.expo.dev/versions/latest/sdk/sqlite/) (via Expo atau react-native-sqlite-storage)
+- [React Navigation](https://reactnavigation.org/)
+- [Expo](https://expo.dev/) *(jika digunakan)*
+
+---
+
+## 🚧 Status Proyek
+
+🚧 **Dalam Pengembangan**  
+Proyek ini masih dalam tahap pengembangan. Beberapa fitur masih dapat berubah atau ditingkatkan di masa mendatang.
+
+---
+
+## ⚙️ Instalasi dan Menjalankan Aplikasi
+
+1. **Clone repository**
    ```bash
+   git clone https://github.com/username/nama-repo.git
+   cd nama-repo
+
+   #Install dependencies
    npm install
-   ```
+   # atau
+   yarn
 
-2. Start the app
+   # Jalankan aplikasi
+   
+   # Untuk pengguna React Native CLI:
+   npx react-native run-android
 
-   ```bash
+   # Untuk pengguna Expo:
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+🤝 Kontribusi
+Kontribusi sangat terbuka! Jika Anda memiliki ide, perbaikan, atau saran, silakan fork dan kirimkan pull request.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
-## Get a fresh project
 
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+   
