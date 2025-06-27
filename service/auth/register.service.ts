@@ -11,7 +11,7 @@ export const registerUser = async (username: string, password: string): Promise<
     }
 
     password = await hashPassword(password);
-    await setDoc(userRef, { username, password });
+    await setDoc(userRef, { username, password, img: '' });
 
     return { success: true, message: 'Register success' };
 };

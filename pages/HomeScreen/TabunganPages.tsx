@@ -1,4 +1,3 @@
-import ModalUser from '@/components/modal/ModalUser';
 import ButtonBasic from '@/components/ui/ButtonBasic';
 import Button from '@/components/ui/ButtonTabungan';
 import IconSettings from '@/components/ui/IconSettings';
@@ -7,6 +6,8 @@ import { useSelectedNavigation } from '@/context/NavigationContext';
 import { DataKeuangan, SelectedType, TypeData } from '@/interface/type';
 import { getToken } from '@/service/auth/token.service';
 // import { deleteAllDataKeuangan } from '@/service/deleteService/deleteAll.service';
+import ModalUser from '@/components/modal/ModalUser';
+import { getImg } from '@/service/auth/getImg.service';
 import { getDataKeuangan } from '@/service/getData/getDataKeuangan.service';
 import { renderSetoran } from '@/utils/SetoranRender';
 import { height, width } from "@/utils/utils";
@@ -31,10 +32,6 @@ interface PropsFront {                  // Props Front
     handleSettings: () => void,
     handleAbout: () => void,
     data: DataKeuangan[];
-    setData: (data: DataKeuangan[]) => void
-    isToken: boolean
-    userData: String | null
-    modalUser: boolean
     handleUser: () => void
     selected: SelectedType
     setSelected: (item: SelectedType) => void
@@ -54,7 +51,8 @@ const TabunganPagesComponent: React.FC<PropsTabungan> = ({ handleSettings, handl
     // state 
     const [data, setData] = useState<DataKeuangan[]>([]); // state data keuangan
     const [isToken, setIsToken] = useState<boolean>(false);
-    const [userData, setUserData] = useState<String | null>(null);
+    const [userData, setUserData] = useState<string | null>(null);
+    const [img, setImg] = useState<string | null>(null);
 
 
 
@@ -120,7 +118,11 @@ const TabunganPagesComponent: React.FC<PropsTabungan> = ({ handleSettings, handl
             const findToken = async () => {
                 const token = await getToken();
                 if (token !== null) {
-                    setUserData(token as String);
+                    const img = await getImg(token as string);
+                    if (img.data) {
+                        setImg(img.data);
+                    }
+                    setUserData(token as string);
                     setIsToken(true);
                 } else {
                     setIsToken(false);
@@ -154,20 +156,25 @@ const TabunganPagesComponent: React.FC<PropsTabungan> = ({ handleSettings, handl
 
 
 
+
+
     return (
         <>
             <BackgroundLeft />
             <BackgroundRight />
             <View style={styles.container}>
-                <ContainerFront handleSettings={handleSettings} handleAbout={handleAbout} data={data} setData={setData} isToken={isToken} userData={userData} modalUser={modalUser} handleUser={handleUser} selected={selected} setSelected={setSelected} loading={loading} />
+                <ContainerFront handleSettings={handleSettings} handleAbout={handleAbout} data={data} handleUser={handleUser} selected={selected} setSelected={setSelected} loading={loading} />
             </View>
+            {modalUser && (
+                <ModalUser userData={userData as string} token={isToken} handleUser={handleUser} img={img as string} />
+            )}
         </>
     )
 }
 
 
 
-const ContainerFrontComponent: React.FC<PropsFront> = ({ handleSettings, handleAbout, data, setData, isToken, userData, modalUser, handleUser, selected, setSelected, loading }) => {
+const ContainerFrontComponent: React.FC<PropsFront> = ({ handleSettings, handleAbout, data, handleUser, selected, setSelected, loading }) => {
 
 
 
@@ -213,11 +220,6 @@ const ContainerFrontComponent: React.FC<PropsFront> = ({ handleSettings, handleA
                     <View style={{ flexDirection: 'row', gap: 7 }}>
                         <IconSettings handleSettings={handleSettings} handleAbout={handleAbout} width={width} />
                         <FontAwesome name="user-circle" size={24} color="white" onPress={handleUser} />
-
-                        {modalUser && (
-                            <ModalUser userData={userData as string} token={isToken} />
-                        )}
-
                     </View>
                 </View>
                 <View style={styles.containerButton}>
@@ -264,7 +266,6 @@ const ContainerFrontComponent: React.FC<PropsFront> = ({ handleSettings, handleA
                     </View>
                 )
             }
-
         </View>
     )
 }

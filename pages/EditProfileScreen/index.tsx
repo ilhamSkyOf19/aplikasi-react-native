@@ -1,16 +1,22 @@
+import ImagePickerModal from '@/components/modal/ImagePickerModal'
+import { getImg } from '@/service/auth/getImg.service'
 import { getToken } from '@/service/auth/token.service'
-import { updateUsername } from '@/service/auth/update.service'
+import { updateUsername, updateUsernameAndImg } from '@/service/auth/update.service'
 import { height, width } from '@/utils/utils'
 import { AntDesign, FontAwesome, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons'
 import { router } from 'expo-router'
 import React, { useEffect, useState } from 'react'
-import { Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+const sample = require('../../assets/images/sample_native.jpg')
+
 
 const EditProfile = () => {
 
     // state username 
     const [usernameOld, setUsernameOld] = useState<string>('');
     const [usernameNew, setUsernameNew] = useState<string>('');
+    const [visible, setVisible] = useState<boolean>(false);
+    const [uriImg, setUriImg] = useState<string>('');
 
     // get username old 
     useEffect(() => {
@@ -19,6 +25,13 @@ const EditProfile = () => {
             if (!token) {
                 router.push('/');
             } else {
+                const fetch = await getImg(token as string);
+                if (!fetch.success) {
+                    router.push('/');
+                } else
+                    if (fetch.data) {
+                        setUriImg(fetch.data);
+                    }
                 setUsernameOld(token as string);
             }
         }
@@ -32,59 +45,88 @@ const EditProfile = () => {
     // handle update
     const handleUpdate = () => {
         const update = async () => {
-            const result = await updateUsername(usernameOld, usernameNew);
-            if (result.success) {
-                router.push('/');
-            } else {
-                alert(result.message);
+            try {
+                await updateUsername(usernameOld, usernameNew);
+                await updateUsernameAndImg({ username: usernameOld, data: { img: uriImg } });
+
+                alert('Update Success');
+                return router.back();
+            } catch (error) {
+                console.log('Update error:', error);
+                alert('Terjadi kesalahan saat update');
             }
         }
-        console.log(usernameOld, usernameNew);
+        // console.log(usernameOld, usernameNew);
         update();
     }
 
-    return (
-        <View style={styles.container}>
-            <View style={styles.containerBack}>
-                <TouchableOpacity onPress={() => { router.back() }} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: '1%' }}>
-                    <AntDesign name="arrowleft" size={28} color="black" />
-                    <Text style={styles.textBack}>Back</Text>
-                </TouchableOpacity>
-            </View>
-            <View style={styles.containerEdit}>
-                <View style={styles.containerImg}>
-                    <View style={styles.containerProfile}>
-                        <FontAwesome name="user-circle" size={180} color="grey" />
-                        <Pressable style={styles.containerEditImg}>
-                            <MaterialCommunityIcons name="image-edit" size={30} color="white" />
-                        </Pressable>
-                    </View>
-                </View>
-                <View style={styles.containerInput}>
-                    <View style={styles.containerTitleInput}>
-                        <Text style={styles.textTitleInput}>Ganti Username</Text>
-                    </View>
-                    <View style={[styles.input]}>
-                        <View style={{ flexDirection: 'row', gap: 10, justifyContent: 'flex-start', alignItems: 'center', width: '85%' }}>
-                            <FontAwesome5 name='user' size={20} color='rgba(0, 0, 0, 0.5)' />
-                            <TextInput
-                                keyboardType='default'
-                                placeholder={'Username'}
-                                placeholderTextColor='rgba(0, 0, 0, 0.5)'
-                                style={styles.inputText}
-                                underlineColorAndroid={'transparent'}
-                                value={usernameNew}
-                                onChangeText={handleUsernameNew}
-                            />
-                        </View>
 
-                    </View >
-                    <TouchableOpacity style={styles.button} onPress={() => { handleUpdate() }}>
-                        <Text style={styles.textButton}>Simpan</Text>
+
+    // handle pick img 
+    const handleModalPick = () => {
+        setVisible(true);
+    };
+
+    // handle uri 
+    const handleUri = (data: string | null) => {
+        setUriImg(data ?? '');
+    }
+
+    return (
+        <>
+            <View style={styles.container}>
+                <View style={styles.containerBack}>
+                    <TouchableOpacity onPress={() => { router.back() }} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: '1%' }}>
+                        <AntDesign name="arrowleft" size={28} color="black" />
+                        <Text style={styles.textBack}>Back</Text>
                     </TouchableOpacity>
                 </View>
+                <View style={styles.containerEdit}>
+                    <View style={styles.containerImg}>
+                        <View style={styles.containerProfile}>
+                            <View style={styles.profile}>
+                                {
+                                    uriImg ? (
+                                        <Image source={uriImg ? { uri: uriImg } : sample} style={styles.imgProfile} />
+                                    ) : (
+                                        <FontAwesome name="user-circle" size={180} color="grey" />
+                                    )
+                                }
+                            </View>
+                            <TouchableOpacity style={styles.containerEditImg} onPress={handleModalPick}>
+                                <MaterialCommunityIcons name="image-edit" size={30} color="white" />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                    <View style={styles.containerInput}>
+                        <View style={styles.containerTitleInput}>
+                            <Text style={styles.textTitleInput}>Ganti Username</Text>
+                        </View>
+                        <View style={[styles.input]}>
+                            <View style={{ flexDirection: 'row', gap: 10, justifyContent: 'flex-start', alignItems: 'center', width: '85%' }}>
+                                <FontAwesome5 name='user' size={20} color='rgba(0, 0, 0, 0.5)' />
+                                <TextInput
+                                    keyboardType='default'
+                                    placeholder={'Username'}
+                                    placeholderTextColor='rgba(0, 0, 0, 0.5)'
+                                    style={styles.inputText}
+                                    underlineColorAndroid={'transparent'}
+                                    value={usernameNew}
+                                    onChangeText={handleUsernameNew}
+                                />
+                            </View>
+
+                        </View >
+                        <TouchableOpacity style={styles.button} onPress={() => { handleUpdate() }}>
+                            <Text style={styles.textButton}>Simpan</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
             </View>
-        </View>
+            <View>
+                <ImagePickerModal isVisible={visible} onCancel={() => setVisible(false)} handleUri={handleUri} />
+            </View>
+        </>
     )
 }
 
@@ -148,7 +190,7 @@ const styles = StyleSheet.create({
         borderRadius: 100,
         padding: 10,
         borderWidth: 5,
-        borderColor: 'white'
+        borderColor: 'white',
     },
 
     // container input 
@@ -221,6 +263,21 @@ const styles = StyleSheet.create({
         fontSize: 15,
         fontFamily: 'Poppins-SemiBold',
         color: 'white'
+    },
+    profile: {
+        borderWidth: 1,
+        width: width / 1.8,
+        height: width / 1.8,
+        borderRadius: 100,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    imgProfile: {
+        width: width / 1.9,
+        height: width / 1.9,
+        borderRadius: 100,
+        justifyContent: 'center',
+        alignItems: 'center',
     }
 })
 
