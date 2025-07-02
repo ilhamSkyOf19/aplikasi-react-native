@@ -1,6 +1,5 @@
 import ButtonBasic from '@/components/ui/ButtonBasic';
 import Button from '@/components/ui/ButtonTabungan';
-import IconSettings from '@/components/ui/IconSettings';
 import NotData from '@/components/ui/NotData';
 import { useSelectedNavigation } from '@/context/NavigationContext';
 import { DataKeuangan, SelectedType, TypeData } from '@/interface/type';
@@ -16,7 +15,7 @@ import { useFocusEffect, usePathname, useRouter } from 'expo-router';
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, Image, StyleSheet, View } from 'react-native';
 import LoadingCircle from '../../components/ui/Loading';
-const Logo = require('../../assets/images/logo.png');
+const Logo = require('../../assets/icon/logo.png');
 // Button List
 const button: Array<string> = ['harian', 'mingguan', 'bulanan']
 
@@ -24,13 +23,10 @@ const button: Array<string> = ['harian', 'mingguan', 'bulanan']
 
 // Props 
 interface PropsTabungan {               // Props Tabungan
-    handleSettings: () => void,
-    handleAbout: () => void,
+
 }
 
 interface PropsFront {                  // Props Front
-    handleSettings: () => void,
-    handleAbout: () => void,
     data: DataKeuangan[];
     handleUser: () => void
     selected: SelectedType
@@ -40,7 +36,7 @@ interface PropsFront {                  // Props Front
 
 
 
-const TabunganPagesComponent: React.FC<PropsTabungan> = ({ handleSettings, handleAbout }) => {
+const TabunganPagesComponent: React.FC<PropsTabungan> = () => {
     // useEffect(() => {
     //     deleteAllData();
     // }, [])
@@ -98,7 +94,6 @@ const TabunganPagesComponent: React.FC<PropsTabungan> = ({ handleSettings, handl
         }, [typeData, loading])
     );
 
-    console.log('ini data', data)
 
 
 
@@ -163,7 +158,7 @@ const TabunganPagesComponent: React.FC<PropsTabungan> = ({ handleSettings, handl
             <BackgroundLeft />
             <BackgroundRight />
             <View style={styles.container}>
-                <ContainerFront handleSettings={handleSettings} handleAbout={handleAbout} data={data} handleUser={handleUser} selected={selected} setSelected={setSelected} loading={loading} />
+                <ContainerFront data={data} handleUser={handleUser} selected={selected} setSelected={setSelected} loading={loading} />
             </View>
             {modalUser && (
                 <ModalUser userData={userData as string} token={isToken} handleUser={handleUser} img={img as string} />
@@ -174,7 +169,7 @@ const TabunganPagesComponent: React.FC<PropsTabungan> = ({ handleSettings, handl
 
 
 
-const ContainerFrontComponent: React.FC<PropsFront> = ({ handleSettings, handleAbout, data, handleUser, selected, setSelected, loading }) => {
+const ContainerFrontComponent: React.FC<PropsFront> = ({ handleUser, data, selected, setSelected, loading }) => {
 
 
 
@@ -216,11 +211,8 @@ const ContainerFrontComponent: React.FC<PropsFront> = ({ handleSettings, handleA
         <View style={styles.containerFront}>
             <View style={styles.backgroundFrontTop}>
                 <View style={styles.containerIconSettings}>
-                    <Image source={Logo} style={styles.icon}></Image>
-                    <View style={{ flexDirection: 'row', gap: 7 }}>
-                        <IconSettings handleSettings={handleSettings} handleAbout={handleAbout} width={width} />
-                        <FontAwesome name="user-circle" size={24} color="white" onPress={handleUser} />
-                    </View>
+                    <Image source={Logo} style={styles.icon} />
+                    <FontAwesome name="user-circle" size={24} color="white" onPress={handleUser} />
                 </View>
                 <View style={styles.containerButton}>
                     {button.map((item, index) => (
@@ -364,7 +356,8 @@ const styles = StyleSheet.create({
     icon: {
         width: width / 8,
         height: height / 20,
-        resizeMode: 'contain'
+        resizeMode: 'contain',
+        // transform: [{ rotate: '90deg' }]
     },
     // tambahkan
     containerTambahkan: {

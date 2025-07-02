@@ -1,7 +1,7 @@
 import React from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import { height, width } from '../../utils/utils';
-const Logo = require('../../assets/images/logo.png');
+const Logo = require('../../assets/icon/splash.png');
 
 
 
@@ -32,10 +32,10 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         width: width,
-        height: '8%',
+        height: '15%',
     },
     icon: {
-        width: '50%',
+        width: width / 2,
         height: '100%',
         resizeMode: 'contain'
     },

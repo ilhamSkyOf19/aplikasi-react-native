@@ -1,35 +1,43 @@
 import CardListTercapai from '@/components/cardComponent/CardListTercapai';
-import IconSettings from '@/components/ui/IconSettings';
+import ModalUser from '@/components/modal/ModalUser';
 import NotData from '@/components/ui/NotData';
 import { DataKeuangan } from '@/interface/type';
+import { getImg } from '@/service/auth/getImg.service';
+import { getToken } from '@/service/auth/token.service';
 import { getDataTercapai } from '@/service/getData/getDataTercapai.service';
-import { useFocusEffect } from 'expo-router';
+import { FontAwesome } from '@expo/vector-icons';
+import { useFocusEffect, usePathname } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import { Dimensions, FlatList, Image, StyleSheet, Text, View } from 'react-native';
 const trophy = require('../../assets/icon/trophy.png');
-const logo = require('../../assets/images/logo.png');
+const logo = require('../../assets/icon/logo.png');
 const { height, width }: { height: number; width: number } = Dimensions.get("screen");
 
 //=====================
 // Props 
 //=====================
 interface PropsTabungan {           // Props Tabungan
-    handleSettings: () => void,
-    handleAbout: () => void,
+
 }
 
 interface PropsFront {              // Props Front
-    handleSettings: () => void;
-    handleAbout: () => void;
+    handleUser: () => void
     dataTercapai: DataKeuangan[];
 
 }
 
 
 
-const TabunganPages: React.FC<PropsTabungan> = ({ handleSettings, handleAbout }) => {
+const TabunganPages: React.FC<PropsTabungan> = () => {
     // state 
     const [dataTercapai, setDataTercapai] = useState<DataKeuangan[]>([]); // state data keuangan
+    // pathname
+    const pathname = usePathname();
+    // state 
+    const [isToken, setIsToken] = useState<boolean>(false);
+    const [userData, setUserData] = useState<string | null>(null);
+    const [img, setImg] = useState<string | null>(null);
+
 
     // useEffect 
     // useFocusEffect fetch data 
@@ -46,24 +54,59 @@ const TabunganPages: React.FC<PropsTabungan> = ({ handleSettings, handleAbout })
     );
 
     // console.log(dataTercapai)
+    // modal user 
+    // user 
+    const [modalUser, setModalUser] = useState<boolean>(false);
+    // handle user 
+    const handleUser = useCallback(() => {
+        setModalUser((prev) => !prev);
+    }, [])
+
+
+    // token 
+    useFocusEffect(
+        useCallback(() => {
+            const findToken = async () => {
+                const token = await getToken();
+                if (token !== null) {
+                    const img = await getImg(token as string);
+                    if (img.data) {
+                        setImg(img.data);
+                    }
+                    setUserData(token as string);
+                    setIsToken(true);
+                } else {
+                    setIsToken(false);
+                }
+            }
+            findToken();
+        }, [pathname])
+    )
 
 
 
 
 
     return (
-        <View style={style.container}>
-            <BackgroundLeft />
-            <BackgroundRight />
-            <ContainerFront handleSettings={handleSettings} handleAbout={handleAbout} dataTercapai={dataTercapai} />
-        </View>
+        <>
+            <View style={style.container}>
+                <BackgroundLeft />
+                <BackgroundRight />
+                <ContainerFront dataTercapai={dataTercapai} handleUser={handleUser} />
+            </View>
+            {modalUser && (
+                <ModalUser userData={userData as string} token={isToken} handleUser={handleUser} img={img as string} />
+            )}
+        </>
     )
 }
 
 
 
 
-export const ContainerFront: React.FC<PropsFront> = ({ handleSettings, handleAbout, dataTercapai }) => {
+export const ContainerFront: React.FC<PropsFront> = ({ dataTercapai, handleUser }) => {
+
+
 
 
 
@@ -73,7 +116,7 @@ export const ContainerFront: React.FC<PropsFront> = ({ handleSettings, handleAbo
             <View style={style.backgroundFrontTop}>
                 <View style={style.containerIconSettings}>
                     <Image source={logo} style={style.icon} />
-                    <IconSettings handleSettings={handleSettings} handleAbout={handleAbout} width={width} />
+                    <FontAwesome name="user-circle" size={24} color="white" onPress={handleUser} />
                 </View>
                 <View style={style.containerTrophy}>
                     <Image source={trophy} style={[style.icon, { width: width / 5, height: width / 5 }]} />

@@ -106,21 +106,6 @@ export default function Layout() {
                                 <Stack screenOptions={{ headerShown: false }}>
                                     {/* Tabs utama */}
                                     <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                                    {/* Halaman Settings dengan custom header */}
-                                    <Stack.Screen
-                                        name="settings"
-                                        options={{
-                                            headerShown: true,
-                                            header: () => <CustomSettingsHeader name="pengaturan" />, // Gunakan custom header
-                                        }}
-                                    />
-                                    <Stack.Screen
-                                        name="about"
-                                        options={{
-                                            headerShown: true,
-                                            header: () => <CustomSettingsHeader name="tentang" />, // Gunakan custom header
-                                        }}
-                                    />
                                     <Stack.Screen
                                         name="setoran"
                                         options={{
@@ -176,23 +161,6 @@ export default function Layout() {
     );
 }
 
-//  Komponen Header Kustom untuk Settings
-
-const CustomSettingsHeader: React.FC<CustomSettingsHeaderProps> = ({ name }) => {
-    const navigation = useNavigation();
-
-    return (
-        <View style={styles.containerSettingsHeader}>
-            {/* Tombol Back di Atas */}
-            <TouchableOpacity onPress={() => navigation.goBack()} style={{ flexDirection: "row", alignItems: "center" }}>
-                <Ionicons name="chevron-back-outline" size={24} color="#fff" />
-            </TouchableOpacity>
-            {/* Judul di Bawah Tombol */}
-            {name === "tentang" && <Text style={styles.title}>Tentang</Text>}
-            {name === "pengaturan" && <Text style={styles.title}>Pengaturan</Text>}
-        </View>
-    );
-};
 
 
 const CustomSetoranHeader: React.FC<PropCustomHeader> = ({ url }) => {
