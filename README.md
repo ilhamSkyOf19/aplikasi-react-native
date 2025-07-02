@@ -30,9 +30,10 @@ Aplikasi pencatatan celengan digital berbasis **React Native**. Aplikasi ini dir
 
 - [React Native](https://reactnative.dev/)
 - [Firebase Authentication](https://firebase.google.com/docs/auth)
-- [SQLite](https://docs.expo.dev/versions/latest/sdk/sqlite/) (via Expo atau react-native-sqlite-storage)
+- [SQLite](https://docs.expo.dev/versions/latest/sdk/sqlite/) (via Expo)
+- [async-storage](https://reactnative.dev/docs/asyncstorage)
 - [React Navigation](https://reactnavigation.org/)
-- [Expo](https://expo.dev/) *(jika digunakan)*
+- [Expo](https://expo.dev/) 
 
 ---
 
