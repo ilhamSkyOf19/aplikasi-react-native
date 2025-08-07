@@ -127,6 +127,12 @@ Proyek ini masih dalam tahap pengembangan. Beberapa fitur masih dapat berubah at
 </div>
 ---
 
+##  Demo Aplikasi
+
+Ini adalah demo video aplikasi “Catatan Celengan”:
+
+[Tonton Demo Video Di Google Drive](https://drive.google.com/file/d/1GXLht18_CnECcDsOpecsFhWy7di2zp_Q/view?usp=sharing)
+
 
 
 
