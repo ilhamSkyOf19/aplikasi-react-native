@@ -1,4 +1,4 @@
-# 🐖 Aplikasi Pencatatan Celengan
+# 🐖 Aplikasi Pencatatan Celengan Digital untuk Mengelola dan Memonitor Target Tabungan Secara Praktis, Offline dan Online
 
 Aplikasi pencatatan celengan digital berbasis **React Native**. Aplikasi ini dirancang untuk membantu pengguna mencatat target tabungan mereka dan memantau pencapaiannya. Mendukung mode offline dan integrasi dengan Firebase.
 
