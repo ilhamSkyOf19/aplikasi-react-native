@@ -105,7 +105,6 @@ const SetoranModal: React.FC<ModalProps> = ({ isVisible, onCancel, title, idSeto
     //=========
     // Handle Change Nominal
     //==========
-    console.log('data:', data?.target || 0)
 
     const handleChangeTextNominal = useCallback((value: string): void => {
 
@@ -146,7 +145,6 @@ const SetoranModal: React.FC<ModalProps> = ({ isVisible, onCancel, title, idSeto
         }
     }, [amount, kurangOrTambah, typeModal, isVisible]);
 
-    console.log('kurang or tambah', kurangOrTambah)
 
     //=========
     // Handle Close Snackbar
@@ -172,7 +170,6 @@ const SetoranModal: React.FC<ModalProps> = ({ isVisible, onCancel, title, idSeto
     //==========
     const handleSimpan = useCallback(async (): Promise<void> => {
         if (amount === '' && keterangan === '') {
-            console.log('not found');
             return;
         }
 
@@ -191,7 +188,6 @@ const SetoranModal: React.FC<ModalProps> = ({ isVisible, onCancel, title, idSeto
                 onCancel();
                 setAmount('');
                 setKeterangan('');
-                console.log('data tersimpan');
 
                 if (kurangOrTambah === 'kurang') {
                     if (dataTabungan === null) {
@@ -218,7 +214,6 @@ const SetoranModal: React.FC<ModalProps> = ({ isVisible, onCancel, title, idSeto
             setAmount('');
             setKeterangan('');
             onCancel();
-            console.log('data setoran', setoran);
         }
     }, [amount, id, idSetoran, keterangan, kurangOrTambah, setoran, typeModal, dataTabungan]);
 

@@ -273,7 +273,7 @@ export const BackgroundLeft: React.FC = () => {
         <View style={{
             position: 'absolute',
             width: '50%',
-            minHeight: height,
+            minHeight: height * 2,
             backgroundColor: 'white',
             zIndex: 1,
             left: 0,
@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
     container: {
         maxWidth: width,
         minWidth: width,
-        minHeight: height / 3,
+        minHeight: height,
         position: 'relative',
         zIndex: 2,
         justifyContent: 'center',
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
     },
     backgroundFrontBottom: {
         width: width,
-        minHeight: height / 1.5,
+        minHeight: height / 1.2,
         backgroundColor: 'white',
         borderTopRightRadius: 75,
         justifyContent: 'flex-start',
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
     },
     containerButtonAdd: {
         position: 'absolute',
-        bottom: height / 25,
+        bottom: height / 5.5,
         right: width / 8.5,
         zIndex: 4
 

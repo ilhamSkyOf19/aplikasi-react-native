@@ -13,7 +13,7 @@ Aplikasi pencatatan celengan digital berbasis **React Native**. Aplikasi ini dir
   Menampilkan daftar catatan celengan yang telah berhasil dicapai.
 
 - **🔐 Autentikasi Pengguna**  
-  Tersedia fitur login dan register menggunakan Firebase Authentication.
+  Tersedia fitur login dan register menggunakan Firebase
 
 - **👤 Halaman Profil**  
   Menampilkan data pengguna yang sedang login.
@@ -21,18 +21,15 @@ Aplikasi pencatatan celengan digital berbasis **React Native**. Aplikasi ini dir
 - **📴 Dukungan Offline**  
   Menggunakan SQLite untuk menyimpan data secara lokal saat tidak terhubung ke internet.
 
-- **☁️ Firebase Integration**  
-  Sinkronisasi dan autentikasi data menggunakan Firebase.
 
 ---
 
 ## 🛠️ Teknologi yang Digunakan
 
 - [React Native](https://reactnative.dev/)
-- [Firebase Authentication](https://firebase.google.com/docs/auth)
+- [Firebase](https://firebase.google.com/docs)
 - [SQLite](https://docs.expo.dev/versions/latest/sdk/sqlite/) (via Expo)
 - [async-storage](https://reactnative.dev/docs/asyncstorage)
-- [React Navigation](https://reactnavigation.org/)
 - [Expo](https://expo.dev/) 
 
 ---
@@ -43,6 +40,95 @@ Aplikasi pencatatan celengan digital berbasis **React Native**. Aplikasi ini dir
 Proyek ini masih dalam tahap pengembangan. Beberapa fitur masih dapat berubah atau ditingkatkan di masa mendatang.
 
 ---
+
+---
+
+## Tampilan Halaman 
+### 1. **Halaman loading saat aplikasi di buka.**
+<div align="left">
+  <img src="./assets/readme/splash.png" alt="Banner" width="250" height="auto">
+</div>
+
+### 2. **Halaman Home** 
+<div align="left">
+  <img src="./assets/readme/home.png" alt="Banner" width="250" height="auto">
+</div>
+
+### 3. **Halaman Add Tabungan**
+  - Form untuk gambar
+      - Gambar bisa diambil dari kamera atau galery
+      - Form Target Tabungan
+      - Batas Tabungan 999.999.999
+  - Form Mata Uang
+      - **IDR** (Rupiah) — Indonesia  
+      - **USD** (US Dollar) — United States  
+      - **EUR** (Euro) — Germany, France, Italy, Spain, Netherlands, Portugal  
+      - **GBP** (Pound Sterling) — United Kingdom  
+      - **JPY** (Yen) — Japan  
+      - **THB** (Baht) — Thailand  
+      - **MYR** (Ringgit) — Malaysia  
+      - **SGD** (Singapore Dollar) — Singapore  
+      - **VND** (Dong) — Vietnam  
+      - **PHP** (Philippine Peso) — Philippines
+  - Form Estimasi Pengisian (Harian, Mingguan, Bulanan)
+      - Disediakan fitur untuk menghitung waktu yg dibutuhkan agar target tercapai.
+
+<div align="left">
+  <img src="./assets/readme/add.png" alt="Banner" width="250" height="auto">
+</div>
+
+### 4. **Halaman Detail Tabungan & Setoran**
+  - Fitur Edit dan Delete
+  - Fitur Tambah Setoran
+      - Tambah Setoran tidak bisa lebih dari target
+  - Fitur Kurang Setoran
+      - Kurang Setoran tidak bisa kurang dari tabungan/setoran yg sudah di tambahkan
+<div align="left">
+  <img src="./assets/readme/setoran.png" alt="Banner" width="250" height="auto">
+  <img src="./assets/readme/modal-add.png" alt="Banner" width="250" height="auto">
+  <img src="./assets/readme/modal-less.png" alt="Banner" width="250" height="auto">
+</div>
+
+### 5. **Halaman Complate**
+  - Berisi Informasi Tabungan yang sudah selesai
+<div align="left">
+  <img src="./assets/readme/complate.png" alt="Banner" width="250" height="auto">
+</div>
+
+### 6. **Halaman Complate Details**
+  - Berisi Informasi Tabungan & Setoran
+  - Berisi Informasi tanggal mulai dan selesai
+<div align="left">
+  <img src="./assets/readme/complate-detail.png" alt="Banner" width="250" height="auto">
+</div>
+
+### 7. **Halaman Register**
+  - Menggunakan Username Uniqe
+<div align="left">
+  <img src="./assets/readme/register.png" alt="Banner" width="250" height="auto">
+</div>
+
+### 8. **Halaman Login**
+<div align="left">
+  <img src="./assets/readme/login.png" alt="Banner" width="250" height="auto">
+</div>
+
+### 8. **Halaman Profile**
+  - Fitur Tambah Foto
+  - Fitur Edit Username (Uniqe)
+<div align="left">
+  <img src="./assets/readme/profile.png" alt="Banner" width="250" height="auto">
+</div>
+
+### 8. **Modal Profile**
+ - Tombol Login & Logout
+<div align="left">
+  <img src="./assets/readme/modal-profile.png" alt="Banner" width="250" height="auto">
+</div>
+---
+
+
+
 
 ## ⚙️ Instalasi dan Menjalankan Aplikasi
 

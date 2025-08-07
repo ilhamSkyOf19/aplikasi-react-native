@@ -186,7 +186,7 @@ export const BackgroundRight: React.FC = () => {
 const style = StyleSheet.create({
     container: {
         maxWidth: width,
-        minHeight: height / 3,
+        minHeight: height,
         position: 'relative',
     },
     containerFront: {
@@ -207,7 +207,7 @@ const style = StyleSheet.create({
     },
     backgroundFrontBottom: {
         width: width,
-        minHeight: height / 1.5,
+        minHeight: height / 1,
         backgroundColor: 'white',
         borderTopRightRadius: 75,
         justifyContent: 'flex-start',
